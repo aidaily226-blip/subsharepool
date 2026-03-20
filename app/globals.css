@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand text-white px-4 py-2 rounded-full text-sm font-medium 
+           hover:bg-brand-dark transition-colors cursor-pointer 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply bg-white text-gray-700 border border-gray-200 px-4 py-2 
+           rounded-full text-sm hover:bg-gray-50 transition-colors 
+           cursor-pointer disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply text-gray-500 px-3 py-1.5 rounded-lg text-sm 
+           hover:bg-gray-100 transition-colors cursor-pointer;
+  }
+
+  .card {
+    @apply bg-white border border-gray-100 rounded-xl p-4 
+           hover:border-gray-300 transition-colors cursor-pointer;
+  }
+
+  .card-static {
+    @apply bg-white border border-gray-100 rounded-xl p-4;
+  }
+
+  .badge {
+    @apply text-xs px-2.5 py-1 rounded-full font-medium;
+  }
+
+  .badge-brand {
+    @apply bg-brand-light text-brand-dark;
+  }
+
+  .badge-featured {
+    @apply bg-brand text-white;
+  }
+
+  .badge-success {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+
+  .badge-warning {
+    @apply bg-amber-50 text-amber-700;
+  }
+
+  .badge-danger {
+    @apply bg-red-50 text-red-700;
+  }
+
+  .filter-tag {
+    @apply text-xs px-3 py-1.5 rounded-full border border-gray-200 
+           bg-white text-gray-500 hover:bg-gray-50 transition-colors 
+           cursor-pointer whitespace-nowrap;
+  }
+
+  .filter-tag-active {
+    @apply bg-brand text-white border-brand hover:bg-brand-dark;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 border border-gray-200 rounded-lg text-sm 
+           focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent
+           placeholder:text-gray-400 bg-white;
+  }
+
+  .textarea {
+    @apply w-full px-3 py-2 border border-gray-200 rounded-lg text-sm 
+           focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent
+           placeholder:text-gray-400 bg-white resize-none;
+  }
+
+  .label {
+    @apply text-sm font-medium text-gray-700 mb-1 block;
+  }
+
+  .section-title {
+    @apply text-base font-semibold text-gray-900;
+  }
+
+  .page-container {
+    @apply max-w-6xl mx-auto px-4 sm:px-6;
+  }
+
+  .dot-filled {
+    @apply w-2.5 h-2.5 rounded-full bg-brand;
+  }
+
+  .dot-empty {
+    @apply w-2.5 h-2.5 rounded-full bg-gray-200;
+  }
+}
