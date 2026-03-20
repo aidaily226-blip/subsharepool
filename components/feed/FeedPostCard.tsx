@@ -27,10 +27,10 @@ export default function FeedPostCard({ post, index }: { post: FeedPostType; inde
           className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
           style={{ background: post.user?.image ? 'transparent' : av.bg, color: av.color }}
         >
-          {getInitials(post.user?.name || post.author || 'U')}
+{getInitials(post.user?.name || 'U')}
         </div>
         <div>
-          <div className="text-sm font-medium text-gray-900">{post.user?.name || post.author}</div>
+          <div className="text-sm font-medium text-gray-900">{post.user?.name || 'Anonymous'}</div>
           <div className="text-xs text-gray-400">{timeAgo(post.created_at || new Date().toISOString())}</div>
         </div>
         <span className={`badge ml-auto ${FEED_TAG_STYLES[post.tag]}`}>
