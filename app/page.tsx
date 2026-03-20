@@ -1,15 +1,10 @@
-import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import HomeTabs from '@/components/shared/HomeTabs'
-
-export const metadata: Metadata = {
-  title: 'SubSharePool — Share Subscriptions, Trips & More',
-  description: 'Split subscription costs, share trips, discover creators and connect with your community. Save money by sharing with SubSharePool.',
-}
 
 export default function HomePage() {
   return (
-    <div>
+    <Suspense fallback={<div className="p-8 text-center text-gray-400">Loading...</div>}>
       <HomeTabs />
-    </div>
+    </Suspense>
   )
 }
