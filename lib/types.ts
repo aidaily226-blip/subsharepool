@@ -63,11 +63,11 @@ export interface Link {
 export interface FeedPost {
   id: string
   user_id: string
-  author?: string
+author?: string
   body: string
   tag: 'deal' | 'idea' | 'question' | 'collab'
   likes: number
-  replies?: number
+replies?: number
   link_title?: string
   link_url?: string
   link_icon?: string
