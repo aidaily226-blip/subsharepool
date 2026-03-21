@@ -20,10 +20,10 @@
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.17.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@opennextjs/cloudflare": "^1.2.0",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "^15.0.0",
@@ -32,7 +32,7 @@
     "typescript": "^5"
   },
   "overrides": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "$react",
+    "react-dom": "$react-dom"
   }
 }
