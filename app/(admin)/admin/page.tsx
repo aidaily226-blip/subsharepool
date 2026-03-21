@@ -1,6 +1,4 @@
 'use client'
-
-import { Metadata } from 'next'
 import Link from 'next/link'
 import { Users, Package, FileText, Flag } from 'lucide-react'
 
