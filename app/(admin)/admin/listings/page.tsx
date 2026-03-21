@@ -1,5 +1,4 @@
-'use client'
-
+export const dynamic = 'force-dynamic';
 const MOCK_LISTINGS = [
   { id:'1', name:'Netflix Premium', type:'Subscription', by:'Aryan K.', date:'Mar 15, 2024', status:'active' },
   { id:'2', name:'Delhi → Manali Carpool', type:'Trip', by:'Sanya M.', date:'Mar 14, 2024', status:'active' },

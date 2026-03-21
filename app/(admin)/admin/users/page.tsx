@@ -1,6 +1,5 @@
-'use client'
-
 import { Metadata } from 'next'
+export const dynamic = 'force-dynamic';
 
 const MOCK_USERS = [
   { id:'1', name:'Aryan Kapoor', email:'aryan@gmail.com', role:'user', blocked:false, joined:'Mar 1, 2024', listings:4 },

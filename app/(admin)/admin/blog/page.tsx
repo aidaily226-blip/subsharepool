@@ -1,6 +1,5 @@
-'use client'
 import Link from 'next/link'
-
+export const dynamic = 'force-dynamic';
 
 const MOCK_POSTS = [
   { id:'1', title:'How to safely split Netflix with strangers in 2024', published:true, date:'Mar 15, 2024' },
