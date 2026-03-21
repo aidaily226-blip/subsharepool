@@ -1,7 +1,6 @@
-import { Metadata } from 'next'
+'use client'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Blog Posts — Admin' }
 
 const MOCK_POSTS = [
   { id:'1', title:'How to safely split Netflix with strangers in 2024', published:true, date:'Mar 15, 2024' },

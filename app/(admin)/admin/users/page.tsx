@@ -1,6 +1,6 @@
-import { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = { title: 'Manage Users — Admin' }
+import { Metadata } from 'next'
 
 const MOCK_USERS = [
   { id:'1', name:'Aryan Kapoor', email:'aryan@gmail.com', role:'user', blocked:false, joined:'Mar 1, 2024', listings:4 },

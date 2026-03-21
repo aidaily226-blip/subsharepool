@@ -1,8 +1,8 @@
+'use client'
+
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Users, Package, FileText, Flag } from 'lucide-react'
-
-export const metadata: Metadata = { title: 'Admin Dashboard' }
 
 const STATS = [
   { label: 'Total Users', value: '1,284', icon: Users, color: 'bg-blue-50 text-blue-600' },
