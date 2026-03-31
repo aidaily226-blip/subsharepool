@@ -38,11 +38,11 @@ export default function Navbar() {
                 </Link>
                 <div className="relative">
                   <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 hover:opacity-80">
-                    {session.user.image ? (
-                      <Image src={session.user.image} alt={session.user.name || ''} width={32} height={32} className="rounded-full" />
+                    {session?.user?.image ? (
+                   <Image src={session.user.image!} alt={session?.user?.name || ''} width={32} height={32} className="rounded-full" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-brand text-white text-xs font-medium flex items-center justify-center">
-                        {getInitials(session.user.name || 'U')}
+{getInitials(session?.user?.name || 'U')}
                       </div>
                     )}
                   </button>
