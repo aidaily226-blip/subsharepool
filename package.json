@@ -10,14 +10,14 @@
     "deploy": "npm run build && npx @opennextjs/cloudflare@latest build"
   },
   "dependencies": {
-    "next": "15.1.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next-auth": "^5.0.0-beta.25",
     "@auth/core": "^0.37.2",
     "@supabase/supabase-js": "^2.43.4",
-    "lucide-react": "^0.469.0",
     "clsx": "^2.1.1",
+    "lucide-react": "^0.469.0",
+    "next": "^15.2.9",
+    "next-auth": "^5.0.0-beta.25",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
