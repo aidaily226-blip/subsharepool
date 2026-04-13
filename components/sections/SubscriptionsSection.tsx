@@ -1,82 +1,177 @@
 'use client'
-import { useState } from 'react'
-import Hero from '@/components/shared/Hero'
-import FilterBar from '@/components/shared/FilterBar'
+import { useState, useEffect } from 'react'
+import { useSession, signIn } from 'next-auth/react'
 
-const CATEGORIES = [
-  { value: 'all', label: 'All' },
-  { value: 'streaming', label: '🎬 Streaming' },
-  { value: 'ai', label: '🤖 AI Tools' },
-  { value: 'design', label: '🎨 Design' },
-  { value: 'hosting', label: '🌐 Hosting' },
-  { value: 'vpn', label: '🔒 VPN' },
-  { value: 'saas', label: '📦 SaaS' },
-  { value: 'music', label: '🎵 Music' },
-]
-
-const SUBS = [
-  { id: '1', icon: '🎬', bg: '#FFECEC', name: 'Netflix Premium', by: 'Arun K.', desc: '4K UHD, separate profile, no ads.', price: 149, slots: 2, total: 4, category: 'streaming', featured: false },
-  { id: '2', icon: '🌐', bg: '#E6F1FB', name: 'Hostinger Business', by: 'Priya S.', desc: 'Subdomain + 10GB storage.', price: 89, slots: 2, total: 5, category: 'hosting', featured: true },
-  { id: '3', icon: '🤖', bg: '#E1F5EE', name: 'ChatGPT Plus', by: 'Rahul M.', desc: 'GPT-4o full access. Shared team plan.', price: 299, slots: 1, total: 2, category: 'ai', featured: false },
-  { id: '4', icon: '🎨', bg: '#FBEAF0', name: 'Figma Professional', by: 'Sofia T.', desc: 'Full editor, dev mode, unlimited projects.', price: 199, slots: 2, total: 4, category: 'design', featured: false },
-  { id: '5', icon: '🔒', bg: '#FAEEDA', name: 'NordVPN 6-device', by: 'James R.', desc: 'One device slot. All regions, no logs.', price: 79, slots: 4, total: 6, category: 'vpn', featured: false },
-  { id: '6', icon: '🎵', bg: '#E1F5EE', name: 'Spotify Duo', by: 'Karan P.', desc: 'Ad-free, offline mode, full library.', price: 99, slots: 1, total: 2, category: 'music', featured: false },
-  { id: '7', icon: '📦', bg: '#F5F4EF', name: 'Notion Team', by: 'Meena J.', desc: 'Full workspace, unlimited blocks.', price: 129, slots: 3, total: 5, category: 'saas', featured: false },
-]
+interface Subscription {
+  id: string
+  name: string
+  description: string
+  price: number
+  total_slots: number
+  filled_slots: number
+  category: string
+  created_at: string
+  users: { name: string; image: string }
+}
 
 export default function SubscriptionsSection() {
-  const [filter, setFilter] = useState('all')
-  const filtered = filter === 'all' ? SUBS : SUBS.filter(s => s.category === filter)
+  const { data: session } = useSession()
+  const [subs, setSubs] = useState<Subscription[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    total_slots: '2',
+    category: 'streaming',
+  })
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    fetchSubs()
+  }, [])
+
+  const fetchSubs = async () => {
+    setLoading(true)
+    const res = await fetch('/api/subscriptions')
+    const data = await res.json()
+    setSubs(data)
+    setLoading(false)
+  }
+
+  const handleSubmit = async () => {
+    if (!session) { signIn('google'); return }
+    if (!form.name) return
+
+    setSubmitting(true)
+    const res = await fetch('/api/subscriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...form,
+        price: parseFloat(form.price),
+        total_slots: parseInt(form.total_slots),
+      }),
+    })
+
+    if (res.ok) {
+      setForm({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' })
+      setShowForm(false)
+      fetchSubs()
+    }
+    setSubmitting(false)
+  }
+
+  const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
 
   return (
     <div>
-      <Hero
-        title="Split subscriptions. Save money."
-        description="Join shared plans for Netflix, Spotify, ChatGPT, Figma and more. Pay only your share."
-        stats={[
-          { value: '8,400+', label: 'active shares' },
-          { value: '31k+', label: 'members saving' },
-          { value: 'avg 68%', label: 'cost saved' },
-        ]}
-        primaryBtn="Find a plan"
-        secondaryBtn="List my plan"
-      />
-      <FilterBar tags={CATEGORIES} onChange={setFilter} />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filtered.map(sub => (
-          <div key={sub.id} className="card flex flex-col">
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ background: sub.bg }}>
-                {sub.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 truncate">{sub.name}</div>
-                <div className="text-xs text-gray-400">by {sub.by}</div>
-              </div>
-              {sub.featured ? (
-                <span className="badge bg-brand text-white shrink-0">Featured</span>
-              ) : (
-                <span className="badge badge-brand shrink-0">{sub.total - sub.slots} open</span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 leading-relaxed mb-3 flex-1">{sub.desc}</p>
-            <div className="flex items-end justify-between mt-auto">
-              <div>
-                <div className="text-sm font-semibold text-gray-900">
-                  ₹{sub.price}<span className="text-xs font-normal text-gray-400">/mo</span>
-                </div>
-                <div className="flex gap-1 mt-1.5">
-                  {Array.from({ length: sub.total }).map((_, i) => (
-                    <div key={i} className={i < sub.slots ? 'dot-filled' : 'dot-empty'} />
-                  ))}
-                </div>
-                <div className="text-xs text-gray-400 mt-0.5">{sub.slots}/{sub.total} slots</div>
-              </div>
-              <button className="btn-outline text-xs px-3 py-1.5">Join</button>
-            </div>
-          </div>
-        ))}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Subscription Shares
+        </h2>
+        <button
+          onClick={() => session ? setShowForm(!showForm) : signIn('google')}
+          className="btn-primary"
+        >
+          + Post Share
+        </button>
       </div>
+
+      {showForm && (
+        <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
+          <h3 className="font-medium text-gray-900 mb-4">New Subscription Share</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              className="input"
+              placeholder="Service name (e.g. Netflix)"
+              value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })}
+            />
+            <select
+              className="input"
+              value={form.category}
+              onChange={e => setForm({ ...form, category: e.target.value })}
+            >
+              {CATEGORIES.map(c => (
+                <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+              ))}
+            </select>
+            <input
+              className="input"
+              placeholder="Price per person (₹)"
+              type="number"
+              value={form.price}
+              onChange={e => setForm({ ...form, price: e.target.value })}
+            />
+            <input
+              className="input"
+              placeholder="Total slots"
+              type="number"
+              value={form.total_slots}
+              onChange={e => setForm({ ...form, total_slots: e.target.value })}
+            />
+            <textarea
+              className="input sm:col-span-2"
+              placeholder="Description"
+              rows={2}
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button onClick={handleSubmit} disabled={submitting} className="btn-primary">
+              {submitting ? 'Posting...' : 'Post'}
+            </button>
+            <button onClick={() => setShowForm(false)} className="btn-outline">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1,2,3].map(i => (
+            <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse">
+              <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : subs.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-4xl mb-3">📦</p>
+          <p className="font-medium">No subscription shares yet</p>
+          <p className="text-sm mt-1">Be the first to post one!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {subs.map(sub => (
+            <div key={sub.id} className="card">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{sub.name}</h3>
+                  <span className="badge badge-brand">{sub.category}</span>
+                </div>
+                <p className="text-brand font-bold">₹{sub.price}<span className="text-xs text-gray-400">/mo</span></p>
+              </div>
+              {sub.description && (
+                <p className="text-sm text-gray-500 mb-3">{sub.description}</p>
+              )}
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-xs text-gray-400">
+                  {sub.filled_slots}/{sub.total_slots} slots filled
+                </p>
+                <button className="btn-primary text-xs py-1.5 px-3">
+                  Join
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
