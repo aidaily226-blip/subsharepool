@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { auth } from '@/lib/auth'
 
+export async function GET() {
+  const { data, error } = await supabaseAdmin
+    .from('subscriptions')
+    .select('*, users(name, image)')
+    .order('created_at', { ascending: false })
+
+  if (error) return NextResponse.json({ error }, { status: 500 })
+  return NextResponse.json(data)
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth()
 
@@ -16,15 +26,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
   }
 
-  // ✅ Get or create user
-  let { data: user, error: userError } = await supabaseAdmin
+  let { data: user } = await supabaseAdmin
     .from('users')
     .select('id')
     .eq('email', session.user.email)
     .single()
 
   if (!user) {
-    const { data: newUser, error: createError } = await supabaseAdmin
+    const { data: newUser } = await supabaseAdmin
       .from('users')
       .insert({
         email: session.user.email,
@@ -33,11 +42,6 @@ export async function POST(req: NextRequest) {
       })
       .select('id')
       .single()
-
-    if (createError) {
-      return NextResponse.json({ error: createError }, { status: 500 })
-    }
-
     user = newUser
   }
 
@@ -45,7 +49,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
-  // ✅ Create subscription
   const { data, error } = await supabaseAdmin
     .from('subscriptions')
     .insert({
@@ -60,6 +63,5 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error }, { status: 500 })
-
   return NextResponse.json(data)
 }
