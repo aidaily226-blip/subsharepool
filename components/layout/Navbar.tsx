@@ -20,9 +20,12 @@ export default function Navbar() {
     <nav className="bg-cream border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center gap-3 h-14">
-          <Link href="/" className="text-lg font-bold tracking-tight text-gray-900 shrink-0">
-            Sub<span className="text-brand">Share</span>Pool
-          </Link>
+    <Link href="/" className="shrink-0 flex items-center gap-2">
+  <Image src="/logo.png" alt="SubSharePool" width={36} height={36} />
+  <span className="text-lg font-bold tracking-tight text-gray-900">
+    Sub<span className="text-brand">Share</span>Pool
+  </span>
+</Link>
 
           <div className="hidden sm:flex flex-1 max-w-xs">
             <div className="relative w-full">
