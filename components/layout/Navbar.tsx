@@ -57,6 +57,9 @@ export default function Navbar() {
                         <p className="text-sm font-medium truncate">{userName}</p>
                         <p className="text-xs text-gray-400 truncate">{userEmail}</p>
                       </div>
+                      <Link href="/dashboard" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" onClick={() => setProfileOpen(false)}>
+  📦 My Dashboard
+</Link>
                       <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" onClick={() => setProfileOpen(false)}>
                         <User size={14} /> Profile
                       </Link>
