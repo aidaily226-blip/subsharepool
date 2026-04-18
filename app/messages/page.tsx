@@ -43,15 +43,33 @@ export default function MessagesPage() {
   }, [status])
 
   useEffect(() => {
+    if (status === 'authenticated' && currentUserId) {
+      const urlParams = new URLSearchParams(window.location.search)
+      const userId = urlParams.get('userId')
+      if (userId) fetchUserAndSelect(userId)
+    }
+  }, [status, currentUserId])
+
+  useEffect(() => {
     if (selectedUser && currentUserId) {
       fetchMessages()
-      subscribeToMessages()
+      const cleanup = subscribeToMessages()
+      return cleanup
     }
   }, [selectedUser])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const fetchUserAndSelect = async (userId: string) => {
+    const { data } = await supabase
+      .from('users')
+      .select('id, name, image, email')
+      .eq('id', userId)
+      .single()
+    if (data) setSelectedUser(data)
+  }
 
   const fetchConversations = async () => {
     setLoading(true)
@@ -83,7 +101,7 @@ export default function MessagesPage() {
 
   const subscribeToMessages = () => {
     const channel = supabase
-      .channel('messages')
+      .channel('messages-channel')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -99,7 +117,7 @@ export default function MessagesPage() {
       })
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    return () => { supabase.removeChannel(channel) }
   }
 
   const sendMessage = async () => {
@@ -196,22 +214,28 @@ export default function MessagesPage() {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-                {messages.map(msg => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${
-                        msg.sender_id === currentUserId
-                          ? 'bg-brand text-white rounded-br-sm'
-                          : 'bg-gray-100 text-gray-900 rounded-bl-sm'
-                      }`}
-                    >
-                      {msg.body}
-                    </div>
+                {messages.length === 0 ? (
+                  <div className="text-center text-gray-400 text-sm mt-8">
+                    No messages yet. Say hello! 👋
                   </div>
-                ))}
+                ) : (
+                  messages.map(msg => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${
+                          msg.sender_id === currentUserId
+                            ? 'bg-brand text-white rounded-br-sm'
+                            : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                        }`}
+                      >
+                        {msg.body}
+                      </div>
+                    </div>
+                  ))
+                )}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -230,7 +254,7 @@ export default function MessagesPage() {
                   disabled={sending || !newMessage.trim()}
                   className="btn-primary px-4"
                 >
-                  Send
+                  {sending ? '...' : 'Send'}
                 </button>
               </div>
             </>
