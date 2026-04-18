@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth'
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('subscriptions')
-    .select('*, users(name, image)')
+    .select('*, users(id, name, image)')
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error }, { status: 500 })

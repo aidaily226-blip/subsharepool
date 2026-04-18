@@ -11,7 +11,7 @@ interface Subscription {
   filled_slots: number
   category: string
   created_at: string
-  users: { name: string; image: string }
+users: { id: string; name: string; image: string }
 }
 
 export default function SubscriptionsSection() {
@@ -164,9 +164,17 @@ export default function SubscriptionsSection() {
                 <p className="text-xs text-gray-400">
                   {sub.filled_slots}/{sub.total_slots} slots filled
                 </p>
-                <button className="btn-primary text-xs py-1.5 px-3">
-                  Join
-                </button>
+                <div className="flex gap-2">
+  <button className="btn-primary text-xs py-1.5 px-3">
+    Join
+  </button>
+  <button
+    onClick={() => window.location.href = `/messages?userId=${sub.users?.id}`}
+    className="btn-outline text-xs py-1.5 px-3"
+  >
+    💬 Message
+  </button>
+</div>
               </div>
             </div>
           ))}
