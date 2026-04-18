@@ -62,14 +62,11 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const fetchUserAndSelect = async (userId: string) => {
-    const { data } = await supabase
-      .from('users')
-      .select('id, name, image, email')
-      .eq('id', userId)
-      .single()
-    if (data) setSelectedUser(data)
-  }
+const fetchUserAndSelect = async (userId: string) => {
+  const res = await fetch(`/api/get-user?userId=${userId}`)
+  const data = await res.json()
+  if (data?.id) setSelectedUser(data)
+}
 
   const fetchConversations = async () => {
     setLoading(true)
