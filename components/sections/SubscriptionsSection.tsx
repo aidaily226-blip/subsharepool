@@ -67,6 +67,32 @@ export default function SubscriptionsSection() {
 
   return (
     <div>
+
+    {/* Hero */}
+<div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
+  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+    Share subscriptions. Save money.
+  </h2>
+  <p className="text-gray-400 text-sm mb-4">
+    Split Netflix, Spotify, ChatGPT and more with trusted people. Post your plan, find members instantly.
+  </p>
+  <div className="flex gap-6">
+    <div>
+      <p className="text-xl font-bold text-gray-900">5,000+</p>
+      <p className="text-xs text-gray-400">subscriptions shared</p>
+    </div>
+    <div>
+      <p className="text-xl font-bold text-gray-900">12k+</p>
+      <p className="text-xs text-gray-400">members saved</p>
+    </div>
+    <div>
+      <p className="text-xl font-bold text-gray-900">avg ₹200</p>
+      <p className="text-xs text-gray-400">saved per month</p>
+    </div>
+  </div>
+</div>
+
+
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">
           Subscription Shares
