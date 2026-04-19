@@ -80,7 +80,6 @@ export default function LinksSection() {
 
   return (
     <div>
-      {/* Hero */}
       <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Share your links. Grow together.
@@ -104,14 +103,13 @@ export default function LinksSection() {
         </div>
       </div>
 
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-2 overflow-x-auto">
           <button
             onClick={() => setActiveType('all')}
             className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${activeType === 'all' ? 'bg-brand text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-brand'}`}
           >
-            🌍 All
+            All
           </button>
           {TYPES.map(type => (
             <button
@@ -131,7 +129,6 @@ export default function LinksSection() {
         </button>
       </div>
 
-      {/* Form */}
       {showForm && (
         <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
           <h3 className="font-medium text-gray-900 mb-4">Share a Link</h3>
@@ -148,7 +145,9 @@ export default function LinksSection() {
               onChange={e => setForm({ ...form, type: e.target.value })}
             >
               {TYPES.map(t => (
-                <option key={t} value={t}>{TYPE_ICONS[t]} {t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                <option key={t} value={t}>
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </option>
               ))}
             </select>
             <input
@@ -165,7 +164,7 @@ export default function LinksSection() {
             />
             <input
               className="input"
-              placeholder="Stat (e.g. 10k followers, ₹500 reward)"
+              placeholder="Stat (e.g. 10k followers)"
               value={form.stat}
               onChange={e => setForm({ ...form, stat: e.target.value })}
             />
@@ -186,10 +185,9 @@ export default function LinksSection() {
         </div>
       )}
 
-      {/* Links grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => (
+          {[1, 2, 3].map(i => (
             <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />
           ))}
         </div>
@@ -233,7 +231,7 @@ export default function LinksSection() {
                     rel="noopener noreferrer"
                     className="btn-primary text-xs py-1.5 px-3"
                   >
-                    Visit →
+                    Visit
                   </a>
                   <button
                     onClick={() => window.location.href = `/messages?userId=${link.users?.id}`}
