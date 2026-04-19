@@ -1,122 +1,252 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession, signIn } from 'next-auth/react'
 
-const LINK_TYPES = [
-  { value: 'all', label: 'All' },
-  { value: 'youtube', label: '🎥 YouTube' },
-  { value: 'instagram', label: '📸 Instagram' },
-  { value: 'portfolio', label: '💼 Portfolio' },
-  { value: 'collab', label: '🤝 Collab' },
-  { value: 'referral', label: '🔗 Referral' },
-  { value: 'affiliate', label: '💰 Affiliate' },
-]
-
-const TYPE_STYLES: Record<string, string> = {
-  youtube: 'bg-red-50 text-red-700',
-  instagram: 'bg-pink-50 text-pink-700',
-  portfolio: 'bg-purple-50 text-purple-700',
-  referral: 'bg-amber-50 text-amber-700',
-  collab: 'bg-emerald-50 text-emerald-700',
-  affiliate: 'bg-green-50 text-green-700',
+interface Link {
+  id: string
+  name: string
+  handle: string
+  type: string
+  description: string
+  url: string
+  stat: string
+  created_at: string
+  users: { id: string; name: string; image: string }
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  youtube: '🎥 YouTube',
-  instagram: '📸 Instagram',
-  portfolio: '💼 Portfolio',
-  referral: '🔗 Referral',
-  collab: '🤝 Collab',
-  affiliate: '💰 Affiliate',
+const TYPE_ICONS: Record<string, string> = {
+  portfolio: '🎨',
+  collab: '🤝',
+  referral: '🎁',
+  youtube: '▶️',
+  instagram: '📸',
+  github: '💻',
+  linkedin: '💼',
+  other: '🔗',
 }
 
-const BTN_LABELS: Record<string, string> = {
-  youtube: 'Visit',
-  instagram: 'Visit',
-  portfolio: 'Visit',
-  referral: 'Get link',
-  collab: 'Connect',
-  affiliate: 'See deals',
-}
-
-const MOCK_LINKS = [
-  { id: '1', name: 'Aryan Kapoor', handle: '@aryantech', type: 'youtube', desc: 'Tech reviews & budget phones. 84k subscribers. Open for collab.', stat: '84k subs · 2.1M views' },
-  { id: '2', name: 'Sanya Mehta', handle: '@sanyacreates', type: 'instagram', desc: 'Lifestyle & travel content. 41k followers. Looking for shoutout exchanges.', stat: '41k followers' },
-  { id: '3', name: 'Rohan Verma', handle: 'rohanverma.dev', type: 'portfolio', desc: 'Full-stack dev. Built 12+ products. Open to freelance & collabs.', stat: '12 projects · open to work' },
-  { id: '4', name: 'Tanvi Nair', handle: '@tanvifin', type: 'referral', desc: 'Zerodha referral — get ₹300 cashback when you open a demat account.', stat: '₹300 cashback for you' },
-  { id: '5', name: 'Dev Studio', handle: 'devstudio.in', type: 'collab', desc: 'Design agency looking for freelance developers. React + Figma projects.', stat: '3 open roles' },
-  { id: '6', name: 'Priya M.', handle: 'affiliate links', type: 'affiliate', desc: 'Hostinger 80% off, Notion Plus free trial, Canva Pro — curated deals.', stat: '3 active deals' },
-]
-
-function getInitials(name: string) {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-}
-
-const AVATAR_BG: Record<string, string> = {
-  youtube: 'bg-red-100 text-red-700',
-  instagram: 'bg-pink-100 text-pink-700',
-  portfolio: 'bg-purple-100 text-purple-700',
-  referral: 'bg-amber-100 text-amber-700',
-  collab: 'bg-emerald-100 text-emerald-700',
-  affiliate: 'bg-green-100 text-green-700',
-}
+const TYPES = ['portfolio', 'collab', 'referral', 'youtube', 'instagram', 'github', 'linkedin', 'other']
 
 export default function LinksSection() {
-  const [filter, setFilter] = useState('all')
-  const filtered = filter === 'all' ? MOCK_LINKS : MOCK_LINKS.filter(l => l.type === filter)
+  const { data: session } = useSession()
+  const [links, setLinks] = useState<Link[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeType, setActiveType] = useState('all')
+  const [showForm, setShowForm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [form, setForm] = useState({
+    name: '',
+    handle: '',
+    type: 'portfolio',
+    description: '',
+    url: '',
+    stat: '',
+  })
+
+  useEffect(() => {
+    fetchLinks()
+  }, [])
+
+  const fetchLinks = async () => {
+    setLoading(true)
+    const res = await fetch('/api/links')
+    const data = await res.json()
+    setLinks(Array.isArray(data) ? data : [])
+    setLoading(false)
+  }
+
+  const handleSubmit = async () => {
+    if (!session) { signIn('google'); return }
+    if (!form.name || !form.url) return
+
+    setSubmitting(true)
+    const res = await fetch('/api/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+
+    if (res.ok) {
+      setForm({ name: '', handle: '', type: 'portfolio', description: '', url: '', stat: '' })
+      setShowForm(false)
+      fetchLinks()
+    }
+    setSubmitting(false)
+  }
+
+  const filtered = activeType === 'all'
+    ? links
+    : links.filter(l => l.type === activeType)
 
   return (
     <div>
       {/* Hero */}
-      <div className="bg-white border border-gray-100 rounded-xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-        <div className="flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1.5">Discover people & their work.</h1>
-          <p className="text-sm text-gray-400 leading-relaxed max-w-md mb-4">Share your portfolio, YouTube, referral links, collab requests. Be found by the right people.</p>
-          <div className="flex flex-wrap gap-4 sm:gap-6">
-            {[{ v: '3,100+', l: 'profiles listed' }, { v: '12k+', l: 'link clicks today' }, { v: '640', l: 'collabs formed' }].map(s => (
-              <div key={s.l}><div className="text-base font-bold text-gray-900">{s.v}</div><div className="text-xs text-gray-400 mt-0.5">{s.l}</div></div>
-            ))}
+      <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Share your links. Grow together.
+        </h2>
+        <p className="text-gray-400 text-sm mb-4">
+          Share your portfolio, find collaborators, post referral links, and connect with creators.
+        </p>
+        <div className="flex gap-6">
+          <div>
+            <p className="text-xl font-bold text-gray-900">3,200+</p>
+            <p className="text-xs text-gray-400">links shared</p>
           </div>
-        </div>
-        <div className="flex sm:flex-col gap-2 sm:min-w-[130px]">
-          <button className="btn-primary flex-1 sm:flex-none text-center">+ Add my link</button>
-          <button className="btn-outline flex-1 sm:flex-none text-center">Browse all</button>
+          <div>
+            <p className="text-xl font-bold text-gray-900">800+</p>
+            <p className="text-xs text-gray-400">collabs found</p>
+          </div>
+          <div>
+            <p className="text-xl font-bold text-gray-900">15k+</p>
+            <p className="text-xs text-gray-400">referrals earned</p>
+          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 flex-wrap mb-4">
-        {LINK_TYPES.map(tag => (
-          <button key={tag.value} onClick={() => setFilter(tag.value)}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer whitespace-nowrap ${
-              filter === tag.value ? 'bg-brand text-white border-brand' : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
-            }`}>
-            {tag.label}
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveType('all')}
+            className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${activeType === 'all' ? 'bg-brand text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-brand'}`}
+          >
+            🌍 All
           </button>
-        ))}
+          {TYPES.map(type => (
+            <button
+              key={type}
+              onClick={() => setActiveType(type)}
+              className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${activeType === type ? 'bg-brand text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-brand'}`}
+            >
+              {TYPE_ICONS[type]} {type.charAt(0).toUpperCase() + type.slice(1)}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => session ? setShowForm(!showForm) : signIn('google')}
+          className="btn-primary shrink-0 ml-3"
+        >
+          + Share Link
+        </button>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filtered.map(link => (
-          <div key={link.id} className="card flex flex-col">
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium shrink-0 ${AVATAR_BG[link.type]}`}>
-                {getInitials(link.name)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 truncate">{link.name}</div>
-                <div className="text-xs text-gray-400 truncate">{link.handle}</div>
-              </div>
-              <span className={`badge shrink-0 ${TYPE_STYLES[link.type]}`}>{TYPE_LABELS[link.type]}</span>
-            </div>
-            <p className="text-xs text-gray-500 leading-relaxed mb-3 flex-1">{link.desc}</p>
-            <div className="flex items-center justify-between mt-auto">
-              <span className="text-xs text-gray-400">{link.stat}</span>
-              <button className="btn-primary text-xs px-3 py-1.5">{BTN_LABELS[link.type]}</button>
-            </div>
+      {/* Form */}
+      {showForm && (
+        <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
+          <h3 className="font-medium text-gray-900 mb-4">Share a Link</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              className="input"
+              placeholder="Name (e.g. My Portfolio)"
+              value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })}
+            />
+            <select
+              className="input"
+              value={form.type}
+              onChange={e => setForm({ ...form, type: e.target.value })}
+            >
+              {TYPES.map(t => (
+                <option key={t} value={t}>{TYPE_ICONS[t]} {t.charAt(0).toUpperCase() + t.slice(1)}</option>
+              ))}
+            </select>
+            <input
+              className="input"
+              placeholder="URL (https://...)"
+              value={form.url}
+              onChange={e => setForm({ ...form, url: e.target.value })}
+            />
+            <input
+              className="input"
+              placeholder="Handle (e.g. @username)"
+              value={form.handle}
+              onChange={e => setForm({ ...form, handle: e.target.value })}
+            />
+            <input
+              className="input"
+              placeholder="Stat (e.g. 10k followers, ₹500 reward)"
+              value={form.stat}
+              onChange={e => setForm({ ...form, stat: e.target.value })}
+            />
+            <textarea
+              className="input"
+              placeholder="Description"
+              rows={2}
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+            />
           </div>
-        ))}
-      </div>
+          <div className="flex gap-2 mt-3">
+            <button onClick={handleSubmit} disabled={submitting} className="btn-primary">
+              {submitting ? 'Sharing...' : 'Share'}
+            </button>
+            <button onClick={() => setShowForm(false)} className="btn-outline">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Links grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1,2,3].map(i => (
+            <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-4xl mb-3">🔗</p>
+          <p className="font-medium">No links yet</p>
+          <p className="text-sm mt-1">Be the first to share one!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(link => (
+            <div key={link.id} className="card">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{TYPE_ICONS[link.type] || '🔗'}</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">{link.name}</h3>
+                    {link.handle && (
+                      <p className="text-xs text-gray-400">{link.handle}</p>
+                    )}
+                  </div>
+                </div>
+                <span className="badge badge-brand text-xs">{link.type}</span>
+              </div>
+
+              {link.description && (
+                <p className="text-xs text-gray-500 mb-2 line-clamp-2">{link.description}</p>
+              )}
+
+              {link.stat && (
+                <p className="text-xs text-brand font-medium mb-3">⭐ {link.stat}</p>
+              )}
+
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+                <p className="text-xs text-gray-400">{link.users?.name}</p>
+                <div className="flex gap-2">
+                  
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary text-xs py-1.5 px-3"
+                  >
+                    Visit →
+                  </a>
+                  <button
+                    onClick={() => window.location.href = `/messages?userId=${link.users?.id}`}
+                    className="btn-outline text-xs py-1.5 px-3"
+                  >
+                    💬
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

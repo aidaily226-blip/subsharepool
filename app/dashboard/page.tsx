@@ -167,6 +167,16 @@ export default function DashboardPage() {
         >
           📦 My Subscriptions
         </button>
+              {/* Message tab */}
+              <button
+  onClick={() => window.location.href = '/messages'}
+  className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
+>
+  💬 Messages
+</button>
+
+
+
         <button
           onClick={() => setActiveTab('trips')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'trips' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}
