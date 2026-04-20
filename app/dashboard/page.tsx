@@ -27,6 +27,16 @@ interface Trip {
   vehicle: string
 }
 
+interface LinkItem {
+  id: string
+  name: string
+  handle: string
+  type: string
+  description: string
+  url: string
+  stat: string
+}
+
 const TYPE_ICONS: Record<string, string> = {
   carpool: '🚗',
   hotel: '🏨',
@@ -34,23 +44,30 @@ const TYPE_ICONS: Record<string, string> = {
   buddy: '🧳',
 }
 
+const LINK_TYPES = ['portfolio', 'collab', 'referral', 'youtube', 'instagram', 'github', 'linkedin', 'other']
+const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
+
 export default function DashboardPage() {
   const { data: session, status } = useSession()
-  const [activeTab, setActiveTab] = useState<'subs' | 'trips'>('subs')
+  const [activeTab, setActiveTab] = useState<'subs' | 'trips' | 'links'>('subs')
 
-  // Subscriptions state
   const [subs, setSubs] = useState<Subscription[]>([])
   const [subsLoading, setSubsLoading] = useState(true)
   const [showSubForm, setShowSubForm] = useState(false)
   const [editSub, setEditSub] = useState<Subscription | null>(null)
   const [subForm, setSubForm] = useState({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' })
 
-  // Trips state
   const [trips, setTrips] = useState<Trip[]>([])
   const [tripsLoading, setTripsLoading] = useState(true)
   const [showTripForm, setShowTripForm] = useState(false)
   const [editTrip, setEditTrip] = useState<Trip | null>(null)
   const [tripForm, setTripForm] = useState({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', description: '', vehicle: '' })
+
+  const [links, setLinks] = useState<LinkItem[]>([])
+  const [linksLoading, setLinksLoading] = useState(true)
+  const [showLinkForm, setShowLinkForm] = useState(false)
+  const [editLink, setEditLink] = useState<LinkItem | null>(null)
+  const [linkForm, setLinkForm] = useState({ name: '', handle: '', type: 'portfolio', description: '', url: '', stat: '' })
 
   const [submitting, setSubmitting] = useState(false)
 
@@ -58,6 +75,7 @@ export default function DashboardPage() {
     if (status === 'authenticated') {
       fetchSubs()
       fetchTrips()
+      fetchLinks()
     }
   }, [status])
 
@@ -75,6 +93,14 @@ export default function DashboardPage() {
     const data = await res.json()
     setTrips(Array.isArray(data) ? data : [])
     setTripsLoading(false)
+  }
+
+  const fetchLinks = async () => {
+    setLinksLoading(true)
+    const res = await fetch('/api/my-links')
+    const data = await res.json()
+    setLinks(Array.isArray(data) ? data : [])
+    setLinksLoading(false)
   }
 
   const handleSubSubmit = async () => {
@@ -115,6 +141,25 @@ export default function DashboardPage() {
     setSubmitting(false)
   }
 
+  const handleLinkSubmit = async () => {
+    if (!linkForm.name || !linkForm.url) return
+    setSubmitting(true)
+    const url = editLink ? `/api/my-links/${editLink.id}` : '/api/my-links'
+    const method = editLink ? 'PUT' : 'POST'
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(linkForm),
+    })
+    if (res.ok) {
+      setLinkForm({ name: '', handle: '', type: 'portfolio', description: '', url: '', stat: '' })
+      setShowLinkForm(false)
+      setEditLink(null)
+      fetchLinks()
+    }
+    setSubmitting(false)
+  }
+
   const handleEditSub = (sub: Subscription) => {
     setEditSub(sub)
     setSubForm({ name: sub.name, description: sub.description || '', price: sub.price?.toString() || '', total_slots: sub.total_slots?.toString() || '2', category: sub.category || 'streaming' })
@@ -139,7 +184,17 @@ export default function DashboardPage() {
     fetchTrips()
   }
 
-  const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
+  const handleEditLink = (link: LinkItem) => {
+    setEditLink(link)
+    setLinkForm({ name: link.name, handle: link.handle || '', type: link.type, description: link.description || '', url: link.url, stat: link.stat || '' })
+    setShowLinkForm(true)
+  }
+
+  const handleDeleteLink = async (id: string) => {
+    if (!confirm('Delete this link?')) return
+    await fetch(`/api/my-links/${id}`, { method: 'DELETE' })
+    fetchLinks()
+  }
 
   if (status === 'loading') return <div className="text-center py-16 text-gray-400">Loading...</div>
 
@@ -159,41 +214,26 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-100">
-        <button
-          onClick={() => setActiveTab('subs')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'subs' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}
-        >
+      <div className="flex gap-2 mb-6 border-b border-gray-100 overflow-x-auto">
+        <button onClick={() => setActiveTab('subs')} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'subs' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}>
           📦 My Subscriptions
         </button>
-              {/* Message tab */}
-              <button
-  onClick={() => window.location.href = '/messages'}
-  className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600"
->
-  💬 Messages
-</button>
-
-
-
-        <button
-          onClick={() => setActiveTab('trips')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'trips' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}
-        >
+        <button onClick={() => setActiveTab('trips')} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'trips' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}>
           ✈️ My Trips
+        </button>
+        <button onClick={() => setActiveTab('links')} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'links' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}>
+          🔗 My Links
+        </button>
+        <button onClick={() => window.location.href = '/messages'} className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600 shrink-0">
+          💬 Messages
         </button>
       </div>
 
-      {/* Subscriptions Tab */}
       {activeTab === 'subs' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={() => { setShowSubForm(!showSubForm); setEditSub(null); setSubForm({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' }) }} className="btn-primary">
-              + New Subscription
-            </button>
+            <button onClick={() => { setShowSubForm(!showSubForm); setEditSub(null); setSubForm({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' }) }} className="btn-primary">+ New Subscription</button>
           </div>
-
           {showSubForm && (
             <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
               <h3 className="font-medium text-gray-900 mb-4">{editSub ? 'Edit Subscription' : 'New Subscription'}</h3>
@@ -212,25 +252,18 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-
           {subsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1,2,3].map(i => <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />)}
             </div>
           ) : subs.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
-              <p className="text-4xl mb-3">📦</p>
-              <p className="font-medium">No subscriptions yet</p>
-            </div>
+            <div className="text-center py-16 text-gray-400"><p className="text-4xl mb-3">📦</p><p className="font-medium">No subscriptions yet</p></div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {subs.map(sub => (
                 <div key={sub.id} className="card">
                   <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{sub.name}</h3>
-                      <span className="badge badge-brand">{sub.category}</span>
-                    </div>
+                    <div><h3 className="font-semibold text-gray-900">{sub.name}</h3><span className="badge badge-brand">{sub.category}</span></div>
                     <p className="text-brand font-bold">₹{sub.price}<span className="text-xs text-gray-400">/mo</span></p>
                   </div>
                   {sub.description && <p className="text-sm text-gray-500 mb-3">{sub.description}</p>}
@@ -248,15 +281,11 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Trips Tab */}
       {activeTab === 'trips' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={() => { setShowTripForm(!showTripForm); setEditTrip(null); setTripForm({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', description: '', vehicle: '' }) }} className="btn-primary">
-              + New Trip
-            </button>
+            <button onClick={() => { setShowTripForm(!showTripForm); setEditTrip(null); setTripForm({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', description: '', vehicle: '' }) }} className="btn-primary">+ New Trip</button>
           </div>
-
           {showTripForm && (
             <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
               <h3 className="font-medium text-gray-900 mb-4">{editTrip ? 'Edit Trip' : 'New Trip'}</h3>
@@ -282,26 +311,19 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-
           {tripsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1,2,3].map(i => <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />)}
             </div>
           ) : trips.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
-              <p className="text-4xl mb-3">✈️</p>
-              <p className="font-medium">No trips yet</p>
-            </div>
+            <div className="text-center py-16 text-gray-400"><p className="text-4xl mb-3">✈️</p><p className="font-medium">No trips yet</p></div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {trips.map(trip => (
                 <div key={trip.id} className="card">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span>{TYPE_ICONS[trip.type]}</span>
-                        <span className="badge badge-brand text-xs">{trip.type}</span>
-                      </div>
+                      <div className="flex items-center gap-2 mb-1"><span>{TYPE_ICONS[trip.type]}</span><span className="badge badge-brand text-xs">{trip.type}</span></div>
                       <h3 className="font-semibold text-gray-900 text-sm">{trip.title}</h3>
                     </div>
                     {trip.price && <p className="text-brand font-bold text-sm">₹{trip.price}</p>}
@@ -311,6 +333,58 @@ export default function DashboardPage() {
                   <div className="flex justify-end gap-2">
                     <button onClick={() => handleEditTrip(trip)} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">Edit</button>
                     <button onClick={() => handleDeleteTrip(trip.id)} className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'links' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <button onClick={() => { setShowLinkForm(!showLinkForm); setEditLink(null); setLinkForm({ name: '', handle: '', type: 'portfolio', description: '', url: '', stat: '' }) }} className="btn-primary">+ New Link</button>
+          </div>
+          {showLinkForm && (
+            <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
+              <h3 className="font-medium text-gray-900 mb-4">{editLink ? 'Edit Link' : 'New Link'}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input className="input" placeholder="Name" value={linkForm.name} onChange={e => setLinkForm({ ...linkForm, name: e.target.value })} />
+                <select className="input" value={linkForm.type} onChange={e => setLinkForm({ ...linkForm, type: e.target.value })}>
+                  {LINK_TYPES.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                </select>
+                <input className="input" placeholder="URL (https://...)" value={linkForm.url} onChange={e => setLinkForm({ ...linkForm, url: e.target.value })} />
+                <input className="input" placeholder="Handle (@username)" value={linkForm.handle} onChange={e => setLinkForm({ ...linkForm, handle: e.target.value })} />
+                <input className="input" placeholder="Stat (e.g. 10k followers)" value={linkForm.stat} onChange={e => setLinkForm({ ...linkForm, stat: e.target.value })} />
+                <textarea className="input" placeholder="Description" rows={2} value={linkForm.description} onChange={e => setLinkForm({ ...linkForm, description: e.target.value })} />
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={handleLinkSubmit} disabled={submitting} className="btn-primary">{submitting ? 'Saving...' : editLink ? 'Update' : 'Share'}</button>
+                <button onClick={() => { setShowLinkForm(false); setEditLink(null) }} className="btn-outline">Cancel</button>
+              </div>
+            </div>
+          )}
+          {linksLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1,2,3].map(i => <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />)}
+            </div>
+          ) : links.length === 0 ? (
+            <div className="text-center py-16 text-gray-400"><p className="text-4xl mb-3">🔗</p><p className="font-medium">No links yet</p></div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {links.map(link => (
+                <div key={link.id} className="card">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900">{link.name}</h3>
+                    <span className="badge badge-brand text-xs">{link.type}</span>
+                  </div>
+                  {link.handle && <p className="text-xs text-gray-400 mb-1">{link.handle}</p>}
+                  {link.stat && <p className="text-xs text-brand mb-2">⭐ {link.stat}</p>}
+                  {link.description && <p className="text-xs text-gray-500 mb-3">{link.description}</p>}
+                  <div className="flex justify-end gap-2 mt-3">
+                    <button onClick={() => handleEditLink(link)} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">Edit</button>
+                    <button onClick={() => handleDeleteLink(link.id)} className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Delete</button>
                   </div>
                 </div>
               ))}

@@ -147,8 +147,14 @@ export default function LinksSection() {
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
                 <p className="text-xs text-gray-400">{link.users?.name}</p>
                 <div className="flex gap-2">
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="btn-primary text-xs py-1.5 px-3">Visit</a>
-                  <button onClick={() => window.location.href = `/messages?userId=${link.users?.id}`} className="btn-outline text-xs py-1.5 px-3">💬</button>
+<a 
+  href={link.url.startsWith('http') ? link.url : `https://${link.url}`} 
+  target="_blank" 
+  rel="noopener noreferrer" 
+  className="btn-primary text-xs py-1.5 px-3"
+>
+  Visit
+</a>                  <button onClick={() => window.location.href = `/messages?userId=${link.users?.id}`} className="btn-outline text-xs py-1.5 px-3">💬</button>
                 </div>
               </div>
             </div>
