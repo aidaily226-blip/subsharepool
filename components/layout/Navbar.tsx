@@ -30,8 +30,17 @@ export default function Navbar() {
           <div className="hidden sm:flex flex-1 max-w-xs">
             <div className="relative w-full">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input type="text" placeholder="Search listings..." className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-brand" />
-            </div>
+<input
+  type="text"
+  placeholder="Search listings..."
+  className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-brand"
+  onKeyDown={e => {
+    if (e.key === 'Enter') {
+      const val = (e.target as HTMLInputElement).value.trim()
+      if (val) window.location.href = `/search?q=${encodeURIComponent(val)}`
+    }
+  }}
+/>            </div>
           </div>
 
           <div className="flex-1" />
