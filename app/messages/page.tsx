@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect, useRef } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import Image from 'next/image'
@@ -62,11 +63,11 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-const fetchUserAndSelect = async (userId: string) => {
-  const res = await fetch(`/api/get-user?userId=${userId}`)
-  const data = await res.json()
-  if (data?.id) setSelectedUser(data)
-}
+  const fetchUserAndSelect = async (userId: string) => {
+    const res = await fetch(`/api/get-user?userId=${userId}`)
+    const data = await res.json()
+    if (data?.id) setSelectedUser(data)
+  }
 
   const fetchConversations = async () => {
     setLoading(true)
@@ -99,22 +100,30 @@ const fetchUserAndSelect = async (userId: string) => {
   const subscribeToMessages = () => {
     const channel = supabase
       .channel('messages-channel')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-      }, (payload) => {
-        const msg = payload.new as Message
-        if (
-          (msg.sender_id === currentUserId && msg.receiver_id === selectedUser?.id) ||
-          (msg.sender_id === selectedUser?.id && msg.receiver_id === currentUserId)
-        ) {
-          fetchMessages()
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const msg = payload.new as Message
+          if (
+            (msg.sender_id === currentUserId &&
+              msg.receiver_id === selectedUser?.id) ||
+            (msg.sender_id === selectedUser?.id &&
+              msg.receiver_id === currentUserId)
+          ) {
+            fetchMessages()
+          }
         }
-      })
+      )
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }
 
   const sendMessage = async () => {
@@ -137,56 +146,74 @@ const fetchUserAndSelect = async (userId: string) => {
     setSending(false)
   }
 
-  if (status === 'loading') return (
-    <div className="text-center py-16 text-gray-400">Loading...</div>
-  )
+  if (status === 'loading')
+    return <div className="text-center py-16 text-gray-400">Loading...</div>
 
-  if (!session) return (
-    <div className="text-center py-16">
-      <p className="text-gray-500 mb-4">Please sign in to view messages</p>
-      <button onClick={() => signIn('google')} className="btn-primary">
-        Sign in with Google
-      </button>
-    </div>
-  )
+  if (!session)
+    return (
+      <div className="text-center py-16">
+        <p className="text-gray-500 mb-4">Please sign in to view messages</p>
+        <button onClick={() => signIn('google')} className="btn-primary">
+          Sign in with Google
+        </button>
+      </div>
+    )
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <h1 className="text-xl font-bold text-gray-900 mb-6">Messages</h1>
 
-      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden flex" style={{ height: '70vh' }}>
-
+      <div
+        className="bg-white border border-gray-100 rounded-xl overflow-hidden flex"
+        style={{ height: '75vh' }}
+      >
         {/* Conversations sidebar */}
-        <div className="w-72 border-r border-gray-100 flex flex-col">
+        <div
+          className={`border-r border-gray-100 flex flex-col ${
+            selectedUser ? 'hidden sm:flex w-72' : 'flex w-full sm:w-72'
+          }`}
+        >
           <div className="p-3 border-b border-gray-100">
             <p className="text-sm font-medium text-gray-700">Conversations</p>
           </div>
+
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <div className="p-4 text-center text-gray-400 text-sm">Loading...</div>
+              <div className="p-4 text-center text-gray-400 text-sm">
+                Loading...
+              </div>
             ) : conversations.length === 0 ? (
               <div className="p-4 text-center text-gray-400 text-sm">
                 No conversations yet.
-                <br />Start by messaging someone!
+                <br />
+                Start by messaging someone!
               </div>
             ) : (
-              conversations.map(user => (
+              conversations.map((user) => (
                 <button
                   key={user.id}
                   onClick={() => setSelectedUser(user)}
-                  className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${selectedUser?.id === user.id ? 'bg-brand-light' : ''}`}
+                  className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${
+                    selectedUser?.id === user.id ? 'bg-brand-light' : ''
+                  }`}
                 >
                   {user.image ? (
-                    <Image src={user.image} alt={user.name} width={40} height={40} className="rounded-full" />
+                    <Image
+                      src={user.image}
+                      alt={user.name}
+                      width={40}
+                      height={40}
+                      className="rounded-full"
+                    />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-brand text-white text-sm font-medium flex items-center justify-center">
                       {getInitials(user.name || 'U')}
                     </div>
                   )}
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-400">{user.email}</p>
-                  </div>
+
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.name}
+                  </p>
                 </button>
               ))
             )}
@@ -194,18 +221,36 @@ const fetchUserAndSelect = async (userId: string) => {
         </div>
 
         {/* Chat area */}
-        <div className="flex-1 flex flex-col">
+        <div
+          className={`flex-1 flex-col ${
+            selectedUser ? 'flex' : 'hidden sm:flex'
+          }`}
+        >
           {selectedUser ? (
             <>
               {/* Header */}
               <div className="p-3 border-b border-gray-100 flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="sm:hidden mr-2 text-gray-400"
+                >
+                  ←
+                </button>
+
                 {selectedUser.image ? (
-                  <Image src={selectedUser.image} alt={selectedUser.name} width={36} height={36} className="rounded-full" />
+                  <Image
+                    src={selectedUser.image}
+                    alt={selectedUser.name}
+                    width={36}
+                    height={36}
+                    className="rounded-full"
+                  />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-brand text-white text-sm font-medium flex items-center justify-center">
                     {getInitials(selectedUser.name || 'U')}
                   </div>
                 )}
+
                 <p className="font-medium text-gray-900">{selectedUser.name}</p>
               </div>
 
@@ -216,10 +261,14 @@ const fetchUserAndSelect = async (userId: string) => {
                     No messages yet. Say hello! 👋
                   </div>
                 ) : (
-                  messages.map(msg => (
+                  messages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex ${msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${
+                        msg.sender_id === currentUserId
+                          ? 'justify-end'
+                          : 'justify-start'
+                      }`}
                     >
                       <div
                         className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${
@@ -243,8 +292,8 @@ const fetchUserAndSelect = async (userId: string) => {
                   className="input flex-1"
                   placeholder="Type a message..."
                   value={newMessage}
-                  onChange={e => setNewMessage(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                 />
                 <button
                   onClick={sendMessage}
@@ -260,7 +309,9 @@ const fetchUserAndSelect = async (userId: string) => {
               <div className="text-center">
                 <p className="text-4xl mb-3">💬</p>
                 <p className="font-medium">Select a conversation</p>
-                <p className="text-sm mt-1">or start a new one from a listing</p>
+                <p className="text-sm mt-1">
+                  or start a new one from a listing
+                </p>
               </div>
             </div>
           )}
