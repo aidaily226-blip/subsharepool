@@ -50,7 +50,7 @@ export default function ProfilePage() {
     setLoading(true)
     const res = await fetch('/api/profile')
     const data = await res.json()
-    if (data?.id) {
+if (data?.user?.id) {
       setProfile(data.user)
       setStats(data.stats)
       setNewUsername(data.user.username || '')
