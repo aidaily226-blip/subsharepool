@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     description: 'Split subscription costs, share trips, discover creators and connect with your community.',
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: 'PNtWbjSYlnfDY0I1Xu_QDv2Gr6W34X2MWwGJ4zJ_10k',
+  },
 }
 
 export const viewport: Viewport = {
