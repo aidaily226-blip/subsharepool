@@ -2,22 +2,22 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
-        brand: {
-          DEFAULT: '#7F77DD',
-          light: '#EEEDFE',
-          dark: '#534AB7',
-        },
-        cream: '#F5F4EF',
+        brand: '#7F77DD',
+        'brand-light': '#F0EFFF',
+        cream: '#F7F6F3',
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
 
 export default config
