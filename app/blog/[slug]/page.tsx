@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
 
 export async function generateStaticParams() {
   const posts = getAllPosts()
@@ -58,18 +59,31 @@ export default async function BlogPostPage(
         <span className="badge badge-brand text-xs mb-3 inline-block">{post.category}</span>
         <h1 className="text-3xl font-bold text-gray-900 mb-4 leading-snug">{post.title}</h1>
         <div className="flex items-center gap-3 text-sm text-gray-400 mb-6">
-          <span>{new Date(post.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <span>
+            {new Date(post.date).toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </span>
           <span>·</span>
           <span>{post.readTime}</span>
         </div>
         {post.image && (
           <div className="relative w-full h-64 rounded-2xl overflow-hidden mb-8">
-            <Image src={post.image} alt={post.title} fill className="object-cover" priority />
+            <Image
+              src={post.image}
+              alt={post.title}
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
         )}
       </div>
 
-      <div className="prose prose-gray max-w-none
+      <div className="
+        prose prose-gray max-w-none
         prose-headings:font-bold
         prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:text-gray-900
         prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-gray-900
@@ -77,26 +91,46 @@ export default async function BlogPostPage(
         prose-li:text-gray-600 prose-li:mb-1
         prose-strong:text-gray-900 prose-strong:font-semibold
         prose-a:text-brand prose-a:no-underline hover:prose-a:underline
-        prose-blockquote:border-l-brand prose-blockquote:bg-brand/5 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-xl prose-blockquote:not-italic
-        prose-table:text-sm prose-th:bg-gray-50 prose-th:text-gray-700 prose-td:text-gray-600
-        prose-code:text-brand prose-code:bg-brand/5 prose-code:px-1 prose-code:rounded
-        prose-hr:border-gray-100
+        prose-blockquote:border-l-4 prose-blockquote:border-brand prose-blockquote:bg-brand/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-gray-600
+        prose-table:text-sm prose-table:w-full
+        prose-thead:bg-gray-50
+        prose-th:text-gray-700 prose-th:font-semibold prose-th:p-3 prose-th:text-left
+        prose-td:text-gray-600 prose-td:p-3 prose-td:border-t prose-td:border-gray-100
+        prose-tr:hover:bg-gray-50
+        prose-code:text-brand prose-code:bg-brand/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+        prose-hr:border-gray-100 prose-hr:my-8
+        prose-img:rounded-xl
       ">
-        <MDXRemote source={post.content} />
+        <MDXRemote
+          source={post.content}
+          options={{
+            mdxOptions: {
+              remarkPlugins: [remarkGfm],
+            },
+          }}
+        />
       </div>
 
       <div className="mt-10 pt-6 border-t border-gray-100">
         <div className="flex flex-wrap gap-2 mb-6">
           {post.tags?.map((tag: string) => (
-            <span key={tag} className="badge badge-brand text-xs">#{tag}</span>
+            <span key={tag} className="badge badge-brand text-xs">
+              #{tag}
+            </span>
           ))}
         </div>
         <div className="bg-brand/5 border border-brand/20 rounded-xl p-5">
           <p className="font-semibold text-gray-900 mb-2">Ready to start saving?</p>
-          <p className="text-sm text-gray-600 mb-4">Join thousands of Indians already saving money on SubSharePool.</p>
+          <p className="text-sm text-gray-600 mb-4">
+            Join thousands of Indians already saving money on SubSharePool.
+          </p>
           <div className="flex gap-3 flex-wrap">
-            <Link href="/?tab=subs" className="btn-primary inline-block text-sm">Browse Listings</Link>
-            <Link href="/?tab=subs" className="btn-outline inline-block text-sm">Post Your Share</Link>
+            <Link href="/?tab=subs" className="btn-primary inline-block text-sm">
+              Browse Listings
+            </Link>
+            <Link href="/?tab=subs" className="btn-outline inline-block text-sm">
+              Post Your Share
+            </Link>
           </div>
         </div>
       </div>
