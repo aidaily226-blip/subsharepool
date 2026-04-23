@@ -214,20 +214,50 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6 border-b border-gray-100 overflow-x-auto">
-        <button onClick={() => setActiveTab('subs')} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'subs' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}>
-          📦 My Subscriptions
-        </button>
-        <button onClick={() => setActiveTab('trips')} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'trips' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}>
-          ✈️ My Trips
-        </button>
-        <button onClick={() => setActiveTab('links')} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'links' ? 'border-brand text-brand' : 'border-transparent text-gray-400'}`}>
-          🔗 My Links
-        </button>
-        <button onClick={() => window.location.href = '/messages'} className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600 shrink-0">
-          💬 Messages
-        </button>
-      </div>
+<div className="flex gap-2 mb-6 border-b border-gray-100 overflow-x-auto">
+  <button
+    onClick={() => setActiveTab('subs')}
+    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${
+      activeTab === 'subs'
+        ? 'border-brand text-brand bg-brand/5'
+        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+    }`}
+  >
+    📦 My Subscriptions
+  </button>
+  <button
+    onClick={() => setActiveTab('trips')}
+    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${
+      activeTab === 'trips'
+        ? 'border-brand text-brand bg-brand/5'
+        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+    }`}
+  >
+    ✈️ My Trips
+  </button>
+  <button
+    onClick={() => setActiveTab('links')}
+    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${
+      activeTab === 'links'
+        ? 'border-brand text-brand bg-brand/5'
+        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
+    }`}
+  >
+    🔗 My Links
+  </button>
+  <button
+    onClick={() => window.location.href = '/messages'}
+    className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-brand hover:border-brand hover:bg-brand/5 transition-colors shrink-0"
+  >
+    💬 Messages
+  </button>
+  <button
+    onClick={() => window.location.href = '/profile'}
+    className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-brand hover:border-brand hover:bg-brand/5 transition-colors shrink-0"
+  >
+    👤 Profile
+  </button>
+</div>
 
       {activeTab === 'subs' && (
         <div>
