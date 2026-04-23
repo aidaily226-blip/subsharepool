@@ -15,6 +15,18 @@ export default function robots(): MetadataRoute.Robots {
           '/setup',
         ],
       },
+      {
+        userAgent: 'facebookexternalhit',
+        allow: '/',
+      },
+      {
+        userAgent: 'Twitterbot',
+        allow: '/',
+      },
+      {
+        userAgent: 'LinkedInBot',
+        allow: '/',
+      },
     ],
     sitemap: 'https://subsharepool.com/sitemap.xml',
     host: 'https://subsharepool.com',
