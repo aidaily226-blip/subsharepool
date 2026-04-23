@@ -20,14 +20,21 @@ async function getOrCreateUser(email: string, name?: string | null, image?: stri
   return user
 }
 
-export async function GET() {
-  const { data, error } = await supabaseAdmin
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const page = parseInt(searchParams.get('page') || '1')
+  const limit = 12
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  const { data, error, count } = await supabaseAdmin
     .from('links')
-    .select('*, users(id, name, image)')
+    .select('*, users(id, name, image)', { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(from, to)
 
   if (error) return NextResponse.json({ error }, { status: 500 })
-  return NextResponse.json(data)
+  return NextResponse.json({ data, count, page, limit })
 }
 
 export async function POST(req: NextRequest) {

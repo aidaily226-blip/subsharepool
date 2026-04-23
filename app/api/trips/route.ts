@@ -23,19 +23,22 @@ async function getOrCreateUser(email: string, name?: string | null, image?: stri
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const type = searchParams.get('type')
+  const page = parseInt(searchParams.get('page') || '1')
+  const limit = 12
+  const from = (page - 1) * limit
+  const to = from + limit - 1
 
   let query = supabaseAdmin
     .from('trips')
-    .select('*, users(id, name, image)')
+    .select('*, users(id, name, image)', { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(from, to)
 
-  if (type && type !== 'all') {
-    query = query.eq('type', type)
-  }
+  if (type && type !== 'all') query = query.eq('type', type)
 
-  const { data, error } = await query
+  const { data, error, count } = await query
   if (error) return NextResponse.json({ error }, { status: 500 })
-  return NextResponse.json(data)
+  return NextResponse.json({ data, count, page, limit })
 }
 
 export async function POST(req: NextRequest) {
