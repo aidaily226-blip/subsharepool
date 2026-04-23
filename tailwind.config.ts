@@ -8,11 +8,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      colors: {
-        brand: '#7F77DD',
-        'brand-light': '#F0EFFF',
-        cream: '#F7F6F3',
-      },
+colors: {
+  brand: '#7F77DD',
+  'brand-dark': '#6B63D0',
+  'brand-light': '#F0EFFF',
+  cream: '#F7F6F3',
+},
     },
   },
   plugins: [
