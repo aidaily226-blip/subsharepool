@@ -5,6 +5,17 @@ export default auth((req) => {
   const { pathname } = req.nextUrl
   const isLoggedIn = !!req.auth
 
+  // ✅ Detect Facebook crawler
+  const userAgent = req.headers.get('user-agent') || ''
+  const isFacebookBot =
+    userAgent.includes('facebookexternalhit') ||
+    userAgent.includes('Facebot')
+
+  // ✅ Allow bots to bypass auth
+  if (isFacebookBot) {
+    return NextResponse.next()
+  }
+
   const protectedRoutes = ['/messages', '/admin']
   const isProtected = protectedRoutes.some(r => pathname.startsWith(r))
 
