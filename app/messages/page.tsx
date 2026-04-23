@@ -60,6 +60,7 @@ export default function MessagesPage() {
   useEffect(() => {
     if (selectedUser && currentUserId) {
       fetchMessages()
+      markAsRead(selectedUser.id)
       const cleanup = subscribeToMessages()
       return cleanup
     }
@@ -104,6 +105,15 @@ export default function MessagesPage() {
     setLoading(false)
   }
 
+  const markAsRead = async (senderId: string) => {
+    await fetch('/api/messages/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senderId }),
+    })
+    fetchConversations()
+  }
+
   const fetchMessages = async () => {
     if (!selectedUser) return
     const res = await fetch(`/api/messages?userId=${selectedUser.id}`)
@@ -125,6 +135,7 @@ export default function MessagesPage() {
           (msg.sender_id === selectedUser?.id && msg.receiver_id === currentUserId)
         ) {
           fetchMessages()
+          markAsRead(selectedUser?.id || '')
         }
       })
       .subscribe()
@@ -151,6 +162,15 @@ export default function MessagesPage() {
       fetchConversations()
     }
     setSending(false)
+  }
+
+  const handleSelectUser = (user: User) => {
+    setSelectedUser(user)
+    markAsRead(user.id)
+    // Optimistically clear unread badge
+    setConversations(prev =>
+      prev.map(c => c.user.id === user.id ? { ...c, unread: 0 } : c)
+    )
   }
 
   if (status === 'loading') return (
@@ -187,7 +207,7 @@ export default function MessagesPage() {
               conversations.map(({ user, lastMsg, unread }) => (
                 <button
                   key={user.id}
-                  onClick={() => setSelectedUser(user)}
+                  onClick={() => handleSelectUser(user)}
                   className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${selectedUser?.id === user.id ? 'bg-brand-light' : ''}`}
                 >
                   {user.image ? (
@@ -199,14 +219,18 @@ export default function MessagesPage() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                      <p className={`text-sm ${unread > 0 ? 'font-bold text-gray-900' : 'font-medium text-gray-900'}`}>
+                        {user.name}
+                      </p>
                       {unread > 0 && (
                         <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shrink-0">
                           {unread}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 truncate">{lastMsg}</p>
+                    <p className={`text-xs truncate ${unread > 0 ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
+                      {lastMsg}
+                    </p>
                   </div>
                 </button>
               ))
