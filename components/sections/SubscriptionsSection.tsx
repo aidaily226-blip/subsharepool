@@ -8,11 +8,22 @@ interface Subscription {
   name: string
   description: string
   price: number
+  currency: string
   total_slots: number
   filled_slots: number
   category: string
   created_at: string
   users: { id: string; name: string; image: string }
+}
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  INR: '₹',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  AED: 'AED ',
+  SGD: 'SGD ',
+  AUD: 'A$',
 }
 
 const LIMIT = 12
@@ -28,6 +39,7 @@ export default function SubscriptionsSection() {
     name: '',
     description: '',
     price: '',
+    currency: 'USD',
     total_slots: '2',
     category: 'streaming',
   })
@@ -62,7 +74,7 @@ export default function SubscriptionsSection() {
     })
 
     if (res.ok) {
-      setForm({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' })
+      setForm({ name: '', description: '', price: '', currency: 'USD', total_slots: '2', category: 'streaming' })
       setShowForm(false)
       fetchSubs(1)
       setPage(1)
@@ -72,6 +84,8 @@ export default function SubscriptionsSection() {
 
   const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
 
+  const getCurrencySymbol = (currency: string) => CURRENCY_SYMBOLS[currency] || currency + ' '
+
   return (
     <div>
       {/* Hero */}
@@ -80,7 +94,7 @@ export default function SubscriptionsSection() {
           Share subscriptions. Save money.
         </h2>
         <p className="text-gray-400 text-sm mb-4">
-          Split Netflix, Spotify, ChatGPT and more with trusted people. Post your plan, find members instantly.
+          Split Netflix, Spotify, ChatGPT and more with trusted people worldwide. Post your plan, find members instantly.
         </p>
         <div className="flex gap-6">
           <div>
@@ -92,8 +106,8 @@ export default function SubscriptionsSection() {
             <p className="text-xs text-gray-400">members saved</p>
           </div>
           <div>
-            <p className="text-xl font-bold text-gray-900">avg ₹200</p>
-            <p className="text-xs text-gray-400">saved per month</p>
+            <p className="text-xl font-bold text-gray-900">50-80%</p>
+            <p className="text-xs text-gray-400">avg cost saved</p>
           </div>
         </div>
       </div>
@@ -130,13 +144,28 @@ export default function SubscriptionsSection() {
                 <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
               ))}
             </select>
-            <input
-              className="input"
-              placeholder="Price per person (₹)"
-              type="number"
-              value={form.price}
-              onChange={e => setForm({ ...form, price: e.target.value })}
-            />
+            <div className="flex gap-2">
+              <select
+                className="input w-28 shrink-0"
+                value={form.currency}
+                onChange={e => setForm({ ...form, currency: e.target.value })}
+              >
+                <option value="USD">$ USD</option>
+                <option value="INR">₹ INR</option>
+                <option value="EUR">€ EUR</option>
+                <option value="GBP">£ GBP</option>
+                <option value="AED">AED</option>
+                <option value="SGD">SGD</option>
+                <option value="AUD">A$ AUD</option>
+              </select>
+              <input
+                className="input flex-1"
+                placeholder="Price per person"
+                type="number"
+                value={form.price}
+                onChange={e => setForm({ ...form, price: e.target.value })}
+              />
+            </div>
             <input
               className="input"
               placeholder="Total slots"
@@ -166,10 +195,7 @@ export default function SubscriptionsSection() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse">
-              <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
-              <div className="h-3 bg-gray-100 rounded w-1/2" />
-            </div>
+            <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />
           ))}
         </div>
       ) : subs.length === 0 ? (
@@ -188,7 +214,10 @@ export default function SubscriptionsSection() {
                     <h3 className="font-semibold text-gray-900">{sub.name}</h3>
                     <span className="badge badge-brand">{sub.category}</span>
                   </div>
-                  <p className="text-brand font-bold">₹{sub.price}<span className="text-xs text-gray-400">/mo</span></p>
+                  <p className="text-brand font-bold">
+                    {getCurrencySymbol(sub.currency || 'USD')}{sub.price}
+                    <span className="text-xs text-gray-400">/mo</span>
+                  </p>
                 </div>
                 {sub.description && (
                   <p className="text-sm text-gray-500 mb-3 line-clamp-2">{sub.description}</p>
@@ -199,9 +228,7 @@ export default function SubscriptionsSection() {
                     <p className="text-xs text-gray-400">{sub.filled_slots}/{sub.total_slots} slots filled</p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="btn-primary text-xs py-1.5 px-3">
-                      Join
-                    </button>
+                    <button className="btn-primary text-xs py-1.5 px-3">Join</button>
                     <button
                       onClick={() => window.location.href = `/messages?userId=${sub.users?.id}`}
                       className="btn-outline text-xs py-1.5 px-3"
