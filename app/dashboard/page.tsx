@@ -8,6 +8,7 @@ interface Subscription {
   name: string
   description: string
   price: number
+  currency: string
   total_slots: number
   filled_slots: number
   category: string
@@ -23,6 +24,7 @@ interface Trip {
   total_seats: number
   filled_seats: number
   price: string
+  currency: string
   description: string
   vehicle: string
 }
@@ -44,8 +46,30 @@ const TYPE_ICONS: Record<string, string> = {
   buddy: '🧳',
 }
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  INR: '₹',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  AED: 'AED ',
+  SGD: 'SGD ',
+  AUD: 'A$',
+}
+
+const CURRENCIES = [
+  { value: 'USD', label: '$ USD' },
+  { value: 'INR', label: '₹ INR' },
+  { value: 'EUR', label: '€ EUR' },
+  { value: 'GBP', label: '£ GBP' },
+  { value: 'AED', label: 'AED' },
+  { value: 'SGD', label: 'SGD' },
+  { value: 'AUD', label: 'A$ AUD' },
+]
+
 const LINK_TYPES = ['portfolio', 'collab', 'referral', 'youtube', 'instagram', 'github', 'linkedin', 'other']
 const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
+
+const getCurrencySymbol = (currency: string) => CURRENCY_SYMBOLS[currency] || currency + ' '
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
@@ -55,19 +79,44 @@ export default function DashboardPage() {
   const [subsLoading, setSubsLoading] = useState(true)
   const [showSubForm, setShowSubForm] = useState(false)
   const [editSub, setEditSub] = useState<Subscription | null>(null)
-  const [subForm, setSubForm] = useState({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' })
+  const [subForm, setSubForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    currency: 'USD',
+    total_slots: '2',
+    category: 'streaming',
+  })
 
   const [trips, setTrips] = useState<Trip[]>([])
   const [tripsLoading, setTripsLoading] = useState(true)
   const [showTripForm, setShowTripForm] = useState(false)
   const [editTrip, setEditTrip] = useState<Trip | null>(null)
-  const [tripForm, setTripForm] = useState({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', description: '', vehicle: '' })
+  const [tripForm, setTripForm] = useState({
+    title: '',
+    type: 'carpool',
+    from_location: '',
+    to_location: '',
+    date: '',
+    total_seats: '2',
+    price: '',
+    currency: 'USD',
+    description: '',
+    vehicle: '',
+  })
 
   const [links, setLinks] = useState<LinkItem[]>([])
   const [linksLoading, setLinksLoading] = useState(true)
   const [showLinkForm, setShowLinkForm] = useState(false)
   const [editLink, setEditLink] = useState<LinkItem | null>(null)
-  const [linkForm, setLinkForm] = useState({ name: '', handle: '', type: 'portfolio', description: '', url: '', stat: '' })
+  const [linkForm, setLinkForm] = useState({
+    name: '',
+    handle: '',
+    type: 'portfolio',
+    description: '',
+    url: '',
+    stat: '',
+  })
 
   const [submitting, setSubmitting] = useState(false)
 
@@ -111,10 +160,14 @@ export default function DashboardPage() {
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...subForm, price: parseFloat(subForm.price), total_slots: parseInt(subForm.total_slots) }),
+      body: JSON.stringify({
+        ...subForm,
+        price: parseFloat(subForm.price),
+        total_slots: parseInt(subForm.total_slots),
+      }),
     })
     if (res.ok) {
-      setSubForm({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' })
+      setSubForm({ name: '', description: '', price: '', currency: 'USD', total_slots: '2', category: 'streaming' })
       setShowSubForm(false)
       setEditSub(null)
       fetchSubs()
@@ -133,7 +186,7 @@ export default function DashboardPage() {
       body: JSON.stringify({ ...tripForm, total_seats: parseInt(tripForm.total_seats) }),
     })
     if (res.ok) {
-      setTripForm({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', description: '', vehicle: '' })
+      setTripForm({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', currency: 'USD', description: '', vehicle: '' })
       setShowTripForm(false)
       setEditTrip(null)
       fetchTrips()
@@ -162,7 +215,14 @@ export default function DashboardPage() {
 
   const handleEditSub = (sub: Subscription) => {
     setEditSub(sub)
-    setSubForm({ name: sub.name, description: sub.description || '', price: sub.price?.toString() || '', total_slots: sub.total_slots?.toString() || '2', category: sub.category || 'streaming' })
+    setSubForm({
+      name: sub.name,
+      description: sub.description || '',
+      price: sub.price?.toString() || '',
+      currency: sub.currency || 'USD',
+      total_slots: sub.total_slots?.toString() || '2',
+      category: sub.category || 'streaming',
+    })
     setShowSubForm(true)
   }
 
@@ -174,7 +234,18 @@ export default function DashboardPage() {
 
   const handleEditTrip = (trip: Trip) => {
     setEditTrip(trip)
-    setTripForm({ title: trip.title, type: trip.type, from_location: trip.from_location, to_location: trip.to_location, date: trip.date, total_seats: trip.total_seats?.toString() || '2', price: trip.price || '', description: trip.description || '', vehicle: trip.vehicle || '' })
+    setTripForm({
+      title: trip.title,
+      type: trip.type,
+      from_location: trip.from_location,
+      to_location: trip.to_location,
+      date: trip.date,
+      total_seats: trip.total_seats?.toString() || '2',
+      price: trip.price || '',
+      currency: trip.currency || 'USD',
+      description: trip.description || '',
+      vehicle: trip.vehicle || '',
+    })
     setShowTripForm(true)
   }
 
@@ -186,7 +257,14 @@ export default function DashboardPage() {
 
   const handleEditLink = (link: LinkItem) => {
     setEditLink(link)
-    setLinkForm({ name: link.name, handle: link.handle || '', type: link.type, description: link.description || '', url: link.url, stat: link.stat || '' })
+    setLinkForm({
+      name: link.name,
+      handle: link.handle || '',
+      type: link.type,
+      description: link.description || '',
+      url: link.url,
+      stat: link.stat || '',
+    })
     setShowLinkForm(true)
   }
 
@@ -214,65 +292,70 @@ export default function DashboardPage() {
         </div>
       </div>
 
-<div className="flex gap-2 mb-6 border-b border-gray-100 overflow-x-auto">
-  <button
-    onClick={() => setActiveTab('subs')}
-    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${
-      activeTab === 'subs'
-        ? 'border-brand text-brand bg-brand/5'
-        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
-    }`}
-  >
-    📦 My Subscriptions
-  </button>
-  <button
-    onClick={() => setActiveTab('trips')}
-    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${
-      activeTab === 'trips'
-        ? 'border-brand text-brand bg-brand/5'
-        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
-    }`}
-  >
-    ✈️ My Trips
-  </button>
-  <button
-    onClick={() => setActiveTab('links')}
-    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${
-      activeTab === 'links'
-        ? 'border-brand text-brand bg-brand/5'
-        : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
-    }`}
-  >
-    🔗 My Links
-  </button>
-  <button
-    onClick={() => window.location.href = '/messages'}
-    className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-brand hover:border-brand hover:bg-brand/5 transition-colors shrink-0"
-  >
-    💬 Messages
-  </button>
-  <button
-    onClick={() => window.location.href = '/profile'}
-    className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-brand hover:border-brand hover:bg-brand/5 transition-colors shrink-0"
-  >
-    👤 Profile
-  </button>
-</div>
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 border-b border-gray-100 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('subs')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'subs' ? 'border-brand text-brand bg-brand/5' : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'}`}
+        >
+          📦 My Subscriptions
+        </button>
+        <button
+          onClick={() => setActiveTab('trips')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'trips' ? 'border-brand text-brand bg-brand/5' : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'}`}
+        >
+          ✈️ My Trips
+        </button>
+        <button
+          onClick={() => setActiveTab('links')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'links' ? 'border-brand text-brand bg-brand/5' : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'}`}
+        >
+          🔗 My Links
+        </button>
+        <button
+          onClick={() => window.location.href = '/messages'}
+          className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-brand hover:border-brand hover:bg-brand/5 transition-colors shrink-0"
+        >
+          💬 Messages
+        </button>
+        <button
+          onClick={() => window.location.href = '/profile'}
+          className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-brand hover:border-brand hover:bg-brand/5 transition-colors shrink-0"
+        >
+          👤 Profile
+        </button>
+      </div>
 
+      {/* Subscriptions Tab */}
       {activeTab === 'subs' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={() => { setShowSubForm(!showSubForm); setEditSub(null); setSubForm({ name: '', description: '', price: '', total_slots: '2', category: 'streaming' }) }} className="btn-primary">+ New Subscription</button>
+            <button
+              onClick={() => {
+                setShowSubForm(!showSubForm)
+                setEditSub(null)
+                setSubForm({ name: '', description: '', price: '', currency: 'USD', total_slots: '2', category: 'streaming' })
+              }}
+              className="btn-primary"
+            >
+              + New Subscription
+            </button>
           </div>
+
           {showSubForm && (
             <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
               <h3 className="font-medium text-gray-900 mb-4">{editSub ? 'Edit Subscription' : 'New Subscription'}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input className="input" placeholder="Service name" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
+                <input className="input" placeholder="Service name (e.g. Netflix)" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
                 <select className="input" value={subForm.category} onChange={e => setSubForm({ ...subForm, category: e.target.value })}>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
                 </select>
-                <input className="input" placeholder="Price per person (₹)" type="number" value={subForm.price} onChange={e => setSubForm({ ...subForm, price: e.target.value })} />
+                <div className="flex gap-2">
+                  <select className="input w-28 shrink-0" value={subForm.currency} onChange={e => setSubForm({ ...subForm, currency: e.target.value })}>
+                    {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                  <input className="input flex-1" placeholder="Price per person" type="number" value={subForm.price} onChange={e => setSubForm({ ...subForm, price: e.target.value })} />
+                </div>
                 <input className="input" placeholder="Total slots" type="number" value={subForm.total_slots} onChange={e => setSubForm({ ...subForm, total_slots: e.target.value })} />
                 <textarea className="input sm:col-span-2" placeholder="Description" rows={2} value={subForm.description} onChange={e => setSubForm({ ...subForm, description: e.target.value })} />
               </div>
@@ -282,6 +365,7 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
           {subsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1,2,3].map(i => <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />)}
@@ -294,7 +378,7 @@ export default function DashboardPage() {
                 <div key={sub.id} className="card">
                   <div className="flex items-start justify-between mb-2">
                     <div><h3 className="font-semibold text-gray-900">{sub.name}</h3><span className="badge badge-brand">{sub.category}</span></div>
-                    <p className="text-brand font-bold">₹{sub.price}<span className="text-xs text-gray-400">/mo</span></p>
+                    <p className="text-brand font-bold">{getCurrencySymbol(sub.currency || 'USD')}{sub.price}<span className="text-xs text-gray-400">/mo</span></p>
                   </div>
                   {sub.description && <p className="text-sm text-gray-500 mb-3">{sub.description}</p>}
                   <div className="flex items-center justify-between mt-3">
@@ -311,11 +395,22 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Trips Tab */}
       {activeTab === 'trips' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={() => { setShowTripForm(!showTripForm); setEditTrip(null); setTripForm({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', description: '', vehicle: '' }) }} className="btn-primary">+ New Trip</button>
+            <button
+              onClick={() => {
+                setShowTripForm(!showTripForm)
+                setEditTrip(null)
+                setTripForm({ title: '', type: 'carpool', from_location: '', to_location: '', date: '', total_seats: '2', price: '', currency: 'USD', description: '', vehicle: '' })
+              }}
+              className="btn-primary"
+            >
+              + New Trip
+            </button>
           </div>
+
           {showTripForm && (
             <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
               <h3 className="font-medium text-gray-900 mb-4">{editTrip ? 'Edit Trip' : 'New Trip'}</h3>
@@ -327,11 +422,16 @@ export default function DashboardPage() {
                   <option value="flight">✈️ Flight Share</option>
                   <option value="buddy">🧳 Travel Buddy</option>
                 </select>
-                <input className="input" placeholder="Date" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} />
-                <input className="input" placeholder="From" value={tripForm.from_location} onChange={e => setTripForm({ ...tripForm, from_location: e.target.value })} />
-                <input className="input" placeholder="To" value={tripForm.to_location} onChange={e => setTripForm({ ...tripForm, to_location: e.target.value })} />
+                <input className="input" placeholder="Date (e.g. May 25, 2026)" value={tripForm.date} onChange={e => setTripForm({ ...tripForm, date: e.target.value })} />
+                <input className="input" placeholder="From (city)" value={tripForm.from_location} onChange={e => setTripForm({ ...tripForm, from_location: e.target.value })} />
+                <input className="input" placeholder="To (city)" value={tripForm.to_location} onChange={e => setTripForm({ ...tripForm, to_location: e.target.value })} />
                 <input className="input" placeholder="Total seats" type="number" value={tripForm.total_seats} onChange={e => setTripForm({ ...tripForm, total_seats: e.target.value })} />
-                <input className="input" placeholder="Price per person (₹)" value={tripForm.price} onChange={e => setTripForm({ ...tripForm, price: e.target.value })} />
+                <div className="flex gap-2">
+                  <select className="input w-28 shrink-0" value={tripForm.currency} onChange={e => setTripForm({ ...tripForm, currency: e.target.value })}>
+                    {CURRENCIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                  <input className="input flex-1" placeholder="Price per person" value={tripForm.price} onChange={e => setTripForm({ ...tripForm, price: e.target.value })} />
+                </div>
                 <input className="input sm:col-span-2" placeholder="Vehicle (for carpools)" value={tripForm.vehicle} onChange={e => setTripForm({ ...tripForm, vehicle: e.target.value })} />
                 <textarea className="input sm:col-span-2" placeholder="Description" rows={2} value={tripForm.description} onChange={e => setTripForm({ ...tripForm, description: e.target.value })} />
               </div>
@@ -341,6 +441,7 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
           {tripsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1,2,3].map(i => <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />)}
@@ -356,7 +457,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 mb-1"><span>{TYPE_ICONS[trip.type]}</span><span className="badge badge-brand text-xs">{trip.type}</span></div>
                       <h3 className="font-semibold text-gray-900 text-sm">{trip.title}</h3>
                     </div>
-                    {trip.price && <p className="text-brand font-bold text-sm">₹{trip.price}</p>}
+                    {trip.price && <p className="text-brand font-bold text-sm">{getCurrencySymbol(trip.currency || 'USD')}{trip.price}</p>}
                   </div>
                   <p className="text-xs text-gray-500 mb-1">{trip.from_location} → {trip.to_location}</p>
                   <p className="text-xs text-gray-400 mb-3">📅 {trip.date} · 👥 {trip.filled_seats}/{trip.total_seats}</p>
@@ -371,11 +472,22 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Links Tab */}
       {activeTab === 'links' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={() => { setShowLinkForm(!showLinkForm); setEditLink(null); setLinkForm({ name: '', handle: '', type: 'portfolio', description: '', url: '', stat: '' }) }} className="btn-primary">+ New Link</button>
+            <button
+              onClick={() => {
+                setShowLinkForm(!showLinkForm)
+                setEditLink(null)
+                setLinkForm({ name: '', handle: '', type: 'portfolio', description: '', url: '', stat: '' })
+              }}
+              className="btn-primary"
+            >
+              + New Link
+            </button>
           </div>
+
           {showLinkForm && (
             <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
               <h3 className="font-medium text-gray-900 mb-4">{editLink ? 'Edit Link' : 'New Link'}</h3>
@@ -395,6 +507,7 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
           {linksLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1,2,3].map(i => <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />)}
