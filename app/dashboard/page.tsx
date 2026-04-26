@@ -39,6 +39,33 @@ interface LinkItem {
   stat: string
 }
 
+interface FeedPost {
+  id: string
+  body: string
+  tag: string
+  likes: number
+  link_title: string
+  link_url: string
+  link_icon: string
+  created_at: string
+}
+
+const TAG_COLORS: Record<string, string> = {
+  deal: 'bg-green-50 text-green-700',
+  idea: 'bg-blue-50 text-blue-700',
+  question: 'bg-yellow-50 text-yellow-700',
+  collab: 'bg-purple-50 text-purple-700',
+}
+
+const TAG_ICONS: Record<string, string> = {
+  deal: '🤑',
+  idea: '💡',
+  question: '❓',
+  collab: '🤝',
+}
+
+const TAGS = ['deal', 'idea', 'question', 'collab']
+
 const TYPE_ICONS: Record<string, string> = {
   carpool: '🚗',
   hotel: '🏨',
@@ -73,7 +100,7 @@ const getCurrencySymbol = (currency: string) => CURRENCY_SYMBOLS[currency] || cu
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
-  const [activeTab, setActiveTab] = useState<'subs' | 'trips' | 'links'>('subs')
+  const [activeTab, setActiveTab] = useState<'subs' | 'trips' | 'links' | 'feed'>('subs')
 
   const [subs, setSubs] = useState<Subscription[]>([])
   const [subsLoading, setSubsLoading] = useState(true)
@@ -118,6 +145,18 @@ export default function DashboardPage() {
     stat: '',
   })
 
+  const [feed, setFeed] = useState<FeedPost[]>([])
+  const [feedLoading, setFeedLoading] = useState(true)
+  const [showFeedForm, setShowFeedForm] = useState(false)
+  const [editFeed, setEditFeed] = useState<FeedPost | null>(null)
+  const [feedForm, setFeedForm] = useState({
+    body: '',
+    tag: 'idea',
+    link_title: '',
+    link_url: '',
+    link_icon: '',
+  })
+
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -125,6 +164,7 @@ export default function DashboardPage() {
       fetchSubs()
       fetchTrips()
       fetchLinks()
+      fetchFeed()
     }
   }, [status])
 
@@ -150,6 +190,14 @@ export default function DashboardPage() {
     const data = await res.json()
     setLinks(Array.isArray(data) ? data : [])
     setLinksLoading(false)
+  }
+
+  const fetchFeed = async () => {
+    setFeedLoading(true)
+    const res = await fetch('/api/my-feed')
+    const data = await res.json()
+    setFeed(Array.isArray(data) ? data : [])
+    setFeedLoading(false)
   }
 
   const handleSubSubmit = async () => {
@@ -209,6 +257,25 @@ export default function DashboardPage() {
       setShowLinkForm(false)
       setEditLink(null)
       fetchLinks()
+    }
+    setSubmitting(false)
+  }
+
+  const handleFeedSubmit = async () => {
+    if (!feedForm.body) return
+    setSubmitting(true)
+    const url = editFeed ? `/api/my-feed/${editFeed.id}` : '/api/my-feed'
+    const method = editFeed ? 'PUT' : 'POST'
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(feedForm),
+    })
+    if (res.ok) {
+      setFeedForm({ body: '', tag: 'idea', link_title: '', link_url: '', link_icon: '' })
+      setShowFeedForm(false)
+      setEditFeed(null)
+      fetchFeed()
     }
     setSubmitting(false)
   }
@@ -274,6 +341,24 @@ export default function DashboardPage() {
     fetchLinks()
   }
 
+  const handleEditFeed = (post: FeedPost) => {
+    setEditFeed(post)
+    setFeedForm({
+      body: post.body,
+      tag: post.tag || 'idea',
+      link_title: post.link_title || '',
+      link_url: post.link_url || '',
+      link_icon: post.link_icon || '',
+    })
+    setShowFeedForm(true)
+  }
+
+  const handleDeleteFeed = async (id: string) => {
+    if (!confirm('Delete this post?')) return
+    await fetch(`/api/my-feed/${id}`, { method: 'DELETE' })
+    fetchFeed()
+  }
+
   if (status === 'loading') return <div className="text-center py-16 text-gray-400">Loading...</div>
 
   if (!session) return (
@@ -311,6 +396,12 @@ export default function DashboardPage() {
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'links' ? 'border-brand text-brand bg-brand/5' : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'}`}
         >
           🔗 My Links
+        </button>
+        <button
+          onClick={() => setActiveTab('feed')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'feed' ? 'border-brand text-brand bg-brand/5' : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'}`}
+        >
+          💬 My Posts
         </button>
         <button
           onClick={() => window.location.href = '/messages'}
@@ -528,6 +619,72 @@ export default function DashboardPage() {
                   <div className="flex justify-end gap-2 mt-3">
                     <button onClick={() => handleEditLink(link)} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">Edit</button>
                     <button onClick={() => handleDeleteLink(link.id)} className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Feed Tab */}
+      {activeTab === 'feed' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => {
+                setShowFeedForm(!showFeedForm)
+                setEditFeed(null)
+                setFeedForm({ body: '', tag: 'idea', link_title: '', link_url: '', link_icon: '' })
+              }}
+              className="btn-primary"
+            >
+              + New Post
+            </button>
+          </div>
+
+          {showFeedForm && (
+            <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
+              <h3 className="font-medium text-gray-900 mb-4">{editFeed ? 'Edit Post' : 'New Post'}</h3>
+              <div className="flex flex-col gap-3">
+                <textarea className="input" placeholder="Share a deal, idea, question or collab request..." rows={3} value={feedForm.body} onChange={e => setFeedForm({ ...feedForm, body: e.target.value })} />
+                <select className="input" value={feedForm.tag} onChange={e => setFeedForm({ ...feedForm, tag: e.target.value })}>
+                  {TAGS.map(t => <option key={t} value={t}>{TAG_ICONS[t]} {t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                </select>
+                <input className="input" placeholder="Link title (optional)" value={feedForm.link_title} onChange={e => setFeedForm({ ...feedForm, link_title: e.target.value })} />
+                <input className="input" placeholder="Link URL (optional)" value={feedForm.link_url} onChange={e => setFeedForm({ ...feedForm, link_url: e.target.value })} />
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={handleFeedSubmit} disabled={submitting} className="btn-primary">{submitting ? 'Saving...' : editFeed ? 'Update' : 'Post'}</button>
+                <button onClick={() => { setShowFeedForm(false); setEditFeed(null) }} className="btn-outline">Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {feedLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1,2,3].map(i => <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse h-32" />)}
+            </div>
+          ) : feed.length === 0 ? (
+            <div className="text-center py-16 text-gray-400"><p className="text-4xl mb-3">💬</p><p className="font-medium">No posts yet</p></div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {feed.map(post => (
+                <div key={post.id} className="bg-white border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className={`badge text-xs ${TAG_COLORS[post.tag]}`}>{TAG_ICONS[post.tag]} {post.tag}</span>
+                    <p className="text-xs text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <p className="text-sm text-gray-700 mb-3">{post.body}</p>
+                  {post.link_title && post.link_url && (
+                    <a href={post.link_url.startsWith('http') ? post.link_url : `https://${post.link_url}`} target="_blank" rel="noopener noreferrer" className="block bg-gray-50 border border-gray-100 rounded-lg p-3 mb-3 hover:bg-gray-100 transition-colors">
+                      <p className="text-sm font-medium text-gray-800">{post.link_title}</p>
+                      <p className="text-xs text-gray-400 truncate">{post.link_url}</p>
+                    </a>
+                  )}
+                  <div className="flex justify-end gap-2 mt-3">
+                    <button onClick={() => handleEditFeed(post)} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">Edit</button>
+                    <button onClick={() => handleDeleteFeed(post.id)} className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Delete</button>
                   </div>
                 </div>
               ))}

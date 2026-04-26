@@ -46,6 +46,8 @@ export default function Navbar() {
           <div className="flex-1" />
 
           <div className="hidden sm:flex items-center gap-2">
+            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">Home</Link>
+            <Link href="/?tab=feed" className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">Community</Link>
             <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">Blog</Link>
 
             {session ? (
@@ -104,6 +106,8 @@ export default function Navbar() {
       {menuOpen && (
         <div className="sm:hidden bg-white border-t border-gray-100 px-4 py-3 flex flex-col gap-3">
           <input type="text" placeholder="Search..." className="input" />
+          <Link href="/" className="text-sm text-gray-600" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link href="/?tab=feed" className="text-sm text-gray-600" onClick={() => setMenuOpen(false)}>Community</Link>
           <Link href="/blog" className="text-sm text-gray-600" onClick={() => setMenuOpen(false)}>Blog</Link>
           {session ? (
             <>
