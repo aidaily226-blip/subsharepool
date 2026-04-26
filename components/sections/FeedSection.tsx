@@ -85,15 +85,15 @@ export default function FeedSection() {
       <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Community Feed</h2>
         <p className="text-gray-400 text-sm mb-4">Share deals, ideas, questions and find collaborators in the community.</p>
-        <div className="flex gap-6">
+        <div className="flex flex-wrap gap-4 sm:gap-6">
           <div><p className="text-xl font-bold text-gray-900">8,400+</p><p className="text-xs text-gray-400">posts shared</p></div>
           <div><p className="text-xl font-bold text-gray-900">2.1k</p><p className="text-xs text-gray-400">active members</p></div>
           <div><p className="text-xl font-bold text-gray-900">500+</p><p className="text-xs text-gray-400">deals found</p></div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-2 overflow-x-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
           <button onClick={() => setActiveTag('all')} className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${activeTag === 'all' ? 'bg-brand text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>
             All
           </button>
@@ -103,7 +103,7 @@ export default function FeedSection() {
             </button>
           ))}
         </div>
-        <button onClick={() => session ? setShowForm(!showForm) : signIn('google')} className="btn-primary shrink-0 ml-3">
+        <button onClick={() => session ? setShowForm(!showForm) : signIn('google')} className="btn-primary shrink-0 w-full sm:w-auto">
           + Post
         </button>
       </div>

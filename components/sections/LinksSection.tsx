@@ -79,15 +79,15 @@ export default function LinksSection() {
       <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Share your links. Grow together.</h2>
         <p className="text-gray-400 text-sm mb-4">Share your portfolio, find collaborators, post referral links, and connect with creators.</p>
-        <div className="flex gap-6">
+        <div className="flex flex-wrap gap-4 sm:gap-6">
           <div><p className="text-xl font-bold text-gray-900">3,200+</p><p className="text-xs text-gray-400">links shared</p></div>
           <div><p className="text-xl font-bold text-gray-900">800+</p><p className="text-xs text-gray-400">collabs found</p></div>
           <div><p className="text-xl font-bold text-gray-900">15k+</p><p className="text-xs text-gray-400">referrals earned</p></div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-2 overflow-x-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
           <button onClick={() => setActiveType('all')} className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${activeType === 'all' ? 'bg-brand text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>All</button>
           {TYPES.map(type => (
             <button key={type} onClick={() => setActiveType(type)} className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${activeType === type ? 'bg-brand text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>
@@ -95,7 +95,7 @@ export default function LinksSection() {
             </button>
           ))}
         </div>
-        <button onClick={() => session ? setShowForm(!showForm) : signIn('google')} className="btn-primary shrink-0 ml-3">+ Share Link</button>
+        <button onClick={() => session ? setShowForm(!showForm) : signIn('google')} className="btn-primary shrink-0 w-full sm:w-auto">+ Share Link</button>
       </div>
 
       {showForm && (
