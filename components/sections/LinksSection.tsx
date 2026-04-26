@@ -50,8 +50,8 @@ export default function LinksSection() {
   const fetchLinks = async () => {
     setLoading(true)
     const res = await fetch('/api/links')
-    const data = await res.json()
-    setLinks(Array.isArray(data) ? data : [])
+    const json = await res.json()
+    setLinks(Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []))
     setLoading(false)
   }
 

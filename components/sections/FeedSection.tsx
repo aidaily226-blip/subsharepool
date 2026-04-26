@@ -53,8 +53,8 @@ export default function FeedSection() {
     setLoading(true)
     const url = activeTag === 'all' ? '/api/feed' : `/api/feed?tag=${activeTag}`
     const res = await fetch(url)
-    const data = await res.json()
-    setPosts(Array.isArray(data) ? data : [])
+    const json = await res.json()
+    setPosts(Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []))
     setLoading(false)
   }
 
