@@ -132,12 +132,15 @@ export default function LinksSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(link => (
             <div key={link.id} className="card">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{TYPE_ICONS[link.type] || '🔗'}</span>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">{link.name}</h3>
-                    {link.handle && <p className="text-xs text-gray-400">{link.handle}</p>}
+              <div className="flex items-start justify-between mb-2 gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className="text-2xl shrink-0">{TYPE_ICONS[link.type] || '🔗'}</span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm truncate">{link.name}</h3>
+                    {link.handle && <p className="text-xs text-gray-400 truncate">{link.handle}</p>}
+                    <a href={link.url.startsWith('http') ? link.url : `https://${link.url}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:underline truncate block mt-0.5">
+                      {link.url}
+                    </a>
                   </div>
                 </div>
                 <span className="badge badge-brand text-xs">{link.type}</span>
