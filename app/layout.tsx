@@ -56,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-CEKZRX67XV"
           strategy="afterInteractive"
@@ -68,6 +69,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gtag('config', 'G-CEKZRX67XV');
           `}
         </Script>
+        {/* Google AdSense */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1068622151710757"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </head>
       <body className={`${inter.className} bg-cream min-h-screen flex flex-col`}>
         <AuthProvider>
