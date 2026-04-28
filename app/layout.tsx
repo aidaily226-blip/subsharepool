@@ -15,12 +15,30 @@ export const metadata: Metadata = {
     template: '%s | SubSharePool',
   },
   description: 'Split subscription costs, share trips, discover creators and connect with your community.',
-  keywords: ['subscription sharing', 'split netflix', 'trip sharing', 'carpooling'],
+  keywords: ['subscription sharing', 'split netflix', 'trip sharing', 'carpooling', 'save money', 'subscription split'],
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+    other: [
+      { rel: 'manifest', url: '/site.webmanifest' },
+    ],
+  },
   openGraph: {
     type: 'website',
     siteName: 'SubSharePool',
     title: 'SubSharePool — Share Subscriptions, Trips & More',
     description: 'Split subscription costs, share trips, discover creators and connect with your community.',
+    images: ['https://subsharepool.com/android-chrome-512x512.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SubSharePool — Share Subscriptions, Trips & More',
+    description: 'Split subscription costs, share trips, discover creators and connect with your community.',
+    images: ['https://subsharepool.com/android-chrome-512x512.png'],
   },
   robots: { index: true, follow: true },
   verification: {
