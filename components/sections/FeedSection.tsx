@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useSession, signIn } from 'next-auth/react'
+import AdsterraAd from '@/components/ads/AdsterraAd'
 
 interface FeedPost {
   id: string
@@ -91,6 +92,8 @@ export default function FeedSection() {
           <div><p className="text-xl font-bold text-gray-900">500+</p><p className="text-xs text-gray-400">deals found</p></div>
         </div>
       </div>
+
+      <AdsterraAd />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
