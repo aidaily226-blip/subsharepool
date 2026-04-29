@@ -1,10 +1,14 @@
-import { Suspense } from 'react'
+import { Suspense } from 'next'
 import HomeTabs from '@/components/sections/HomeTabs'
+import Hero from '@/components/sections/Hero'
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-gray-400">Loading...</div>}>
-      <HomeTabs />
-    </Suspense>
+    <>
+      <Hero />
+      <Suspense fallback={<div className="text-center py-16 text-gray-400">Loading...</div>}>
+        <HomeTabs />
+      </Suspense>
+    </>
   )
 }
