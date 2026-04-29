@@ -1,4 +1,4 @@
-import { Suspense } from 'next'
+import { Suspense } from 'react'
 import HomeTabs from '@/components/sections/HomeTabs'
 import Hero from '@/components/sections/Hero'
 
