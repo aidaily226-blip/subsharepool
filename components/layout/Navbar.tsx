@@ -1,11 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { Search, Menu, X, MessageSquare, LogOut, User, Shield } from 'lucide-react'
 import { getInitials } from '@/lib/utils'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 const TABS = [
   { id: 'subs', label: '📦 Subscriptions', href: '/?tab=subs' },
@@ -14,14 +14,71 @@ const TABS = [
   { id: 'feed', label: '💬 Community', href: '/?tab=feed' },
 ]
 
+function NavTabs() {
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const activeTab = searchParams.get('tab') || 'subs'
+  const isHome = pathname === '/'
+
+  if (!isHome) return null
+
+  return (
+    <div className="border-t border-gray-100 bg-cream">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex overflow-x-auto">
+          {TABS.map(tab => (
+            <Link
+              key={tab.id}
+              href={tab.href}
+              className={`px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors shrink-0 ${
+                activeTab === tab.id
+                  ? 'border-brand text-brand font-medium'
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MobileMenuTabs({ activeTab, isHome, onClose }: { activeTab: string; isHome: boolean; onClose: () => void }) {
+  return (
+    <>
+      <p className="text-xs text-gray-400 font-medium px-1 mt-1 mb-1">Browse</p>
+      {TABS.map(tab => (
+        <Link
+          key={tab.id}
+          href={tab.href}
+          onClick={onClose}
+          className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+            isHome && activeTab === tab.id
+              ? 'bg-brand/10 text-brand font-medium'
+              : 'text-gray-600 hover:bg-gray-50'
+          }`}
+        >
+          {tab.label}
+        </Link>
+      ))}
+    </>
+  )
+}
+
+function MobileMenuTabsWrapper({ onClose }: { onClose: () => void }) {
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const activeTab = searchParams.get('tab') || 'subs'
+  const isHome = pathname === '/'
+  return <MobileMenuTabs activeTab={activeTab} isHome={isHome} onClose={onClose} />
+}
+
 export default function Navbar() {
   const { data: session } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const activeTab = searchParams.get('tab') || 'subs'
-  const isHome = pathname === '/'
 
   const userName = session?.user?.name ?? ''
   const userEmail = session?.user?.email ?? ''
@@ -122,28 +179,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Tabs row — shows on homepage */}
-      {isHome && (
-        <div className="border-t border-gray-100 bg-cream">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="flex overflow-x-auto scrollbar-hide">
-              {TABS.map(tab => (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  className={`px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors shrink-0 ${
-                    activeTab === tab.id
-                      ? 'border-brand text-brand font-medium'
-                      : 'border-transparent text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Tabs row — homepage only */}
+      <Suspense fallback={null}>
+        <NavTabs />
+      </Suspense>
 
       {/* Mobile menu */}
       {menuOpen && (
@@ -165,21 +204,9 @@ export default function Navbar() {
           </div>
 
           {/* Section tabs */}
-          <p className="text-xs text-gray-400 font-medium px-1 mt-1 mb-1">Browse</p>
-          {TABS.map(tab => (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              onClick={() => setMenuOpen(false)}
-              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                isHome && activeTab === tab.id
-                  ? 'bg-brand/10 text-brand font-medium'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {tab.label}
-            </Link>
-          ))}
+          <Suspense fallback={null}>
+            <MobileMenuTabsWrapper onClose={() => setMenuOpen(false)} />
+          </Suspense>
 
           <div className="border-t border-gray-100 my-2" />
 
