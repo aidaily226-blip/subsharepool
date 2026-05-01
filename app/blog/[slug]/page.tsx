@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
+import BlogCTA from '@/components/shared/BlogCTA'
 
 export async function generateStaticParams() {
   const posts = getAllPosts()
@@ -49,6 +50,10 @@ export default async function BlogPostPage(
   const post = getPost(slug)
   if (!post) notFound()
 
+  const isTrip = post.tags?.some((t: string) =>
+    ['carpool', 'trip', 'travel', 'carpooling'].includes(t.toLowerCase())
+  )
+
   return (
     <article className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <Link href="/blog" className="text-sm text-brand hover:underline mb-6 inline-block">
@@ -61,9 +66,7 @@ export default async function BlogPostPage(
         <div className="flex items-center gap-3 text-sm text-gray-400 mb-6">
           <span>
             {new Date(post.date).toLocaleDateString('en-IN', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
+              day: 'numeric', month: 'long', year: 'numeric',
             })}
           </span>
           <span>·</span>
@@ -71,15 +74,20 @@ export default async function BlogPostPage(
         </div>
         {post.image && (
           <div className="relative w-full h-64 rounded-2xl overflow-hidden mb-8">
-            <Image
-              src={post.image}
-              alt={post.title}
-              fill
-              className="object-cover"
-              priority
-            />
+            <Image src={post.image} alt={post.title} fill className="object-cover" priority />
           </div>
         )}
+      </div>
+
+      {/* Inline CTA — top of article */}
+      <div className="bg-brand/5 border border-brand/20 rounded-xl p-4 mb-8 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">Join SubSharePool — Free</p>
+          <p className="text-xs text-gray-500 mt-0.5">Find people to split costs with worldwide</p>
+        </div>
+        <Link href="/?tab=subs" className="btn-primary text-xs px-4 py-2 shrink-0">
+          Browse →
+        </Link>
       </div>
 
       <div className="
@@ -111,28 +119,22 @@ export default async function BlogPostPage(
         />
       </div>
 
-      <div className="mt-10 pt-6 border-t border-gray-100">
-        <div className="flex flex-wrap gap-2 mb-6">
-          {post.tags?.map((tag: string) => (
-            <span key={tag} className="badge badge-brand text-xs">
-              #{tag}
-            </span>
-          ))}
-        </div>
-        <div className="bg-brand/5 border border-brand/20 rounded-xl p-5">
-          <p className="font-semibold text-gray-900 mb-2">Ready to start saving?</p>
-          <p className="text-sm text-gray-600 mb-4">
-            Join thousands of Indians already saving money on SubSharePool.
-          </p>
-          <div className="flex gap-3 flex-wrap">
-            <Link href="/?tab=subs" className="btn-primary inline-block text-sm">
-              Browse Listings
-            </Link>
-            <Link href="/?tab=subs" className="btn-outline inline-block text-sm">
-              Post Your Share
-            </Link>
-          </div>
-        </div>
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2 mt-8 mb-2">
+        {post.tags?.map((tag: string) => (
+          <span key={tag} className="badge badge-brand text-xs">#{tag}</span>
+        ))}
+      </div>
+
+      {/* Big conversion CTA section */}
+      <BlogCTA type={isTrip ? 'trips' : 'subs'} />
+
+      {/* Related posts link */}
+      <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+        <p className="text-sm text-gray-400 mb-3">Want to read more?</p>
+        <Link href="/blog" className="btn-outline text-sm">
+          ← Browse all articles
+        </Link>
       </div>
     </article>
   )
