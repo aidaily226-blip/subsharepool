@@ -87,14 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
-          // inside body:
-<AuthProvider>
-  <Navbar />
-  <main className="flex-1">{children}</main>
-  <Footer />
+
   <FloatingBar />
 </AuthProvider>
-        </AuthProvider>
+     
       </body>
     </html>
   )
