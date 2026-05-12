@@ -75,12 +75,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
         {/* Google AdSense */}
-        <Script
+        <meta name="google-adsense-account" content="ca-pub-1068622151710757" />
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1068622151710757"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+        ></script>
       </head>
       <body className={`${inter.className} bg-cream min-h-screen flex flex-col`}>
         <AuthProvider>
