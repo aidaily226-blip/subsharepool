@@ -1,4 +1,5 @@
 import { getPost, getAllPosts } from '@/lib/blog'
+import RelatedPosts from '@/components/shared/RelatedPosts'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -125,6 +126,7 @@ export default async function BlogPostPage(
           <span key={tag} className="badge badge-brand text-xs">#{tag}</span>
         ))}
       </div>
+      <RelatedPosts currentSlug={slug} category={post.category} />
 
       {/* Big conversion CTA section */}
       <BlogCTA type={isTrip ? 'trips' : 'subs'} />
