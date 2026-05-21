@@ -56,9 +56,13 @@ export default function LinksSection() {
     setLoading(false)
   }
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
     if (!session) { signIn('google'); return }
-    if (!form.name || !form.url) return
+    if (!form.name || !form.url) {
+      console.log('Missing fields:', form)
+      return
+    }
+    console.log('Submitting:', form)
     setSubmitting(true)
     const res = await fetch('/api/links', {
       method: 'POST',
