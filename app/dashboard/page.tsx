@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import Link from 'next/link'
+import ReferralDashboard from '@/components/shared/ReferralDashboard'
 
 interface Subscription {
   id: string
@@ -100,7 +101,7 @@ const getCurrencySymbol = (currency: string) => CURRENCY_SYMBOLS[currency] || cu
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
-  const [activeTab, setActiveTab] = useState<'subs' | 'trips' | 'links' | 'feed'>('subs')
+  const [activeTab, setActiveTab] = useState<'subs' | 'trips' | 'links' | 'feed' | 'referral'>('subs')
 
   const [subs, setSubs] = useState<Subscription[]>([])
   const [subsLoading, setSubsLoading] = useState(true)
@@ -404,6 +405,12 @@ export default function DashboardPage() {
           💬 My Posts
         </button>
         <button
+          onClick={() => setActiveTab('referral')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors shrink-0 ${activeTab === 'referral' ? 'border-brand text-brand bg-brand/5' : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'}`}
+        >
+          💰 Referrals
+        </button>
+        <button
           onClick={() => window.location.href = '/messages'}
           className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-brand hover:border-brand hover:bg-brand/5 transition-colors shrink-0"
         >
@@ -692,6 +699,9 @@ export default function DashboardPage() {
           )}
         </div>
       )}
+
+      {/* Referral Tab */}
+      {activeTab === 'referral' && <ReferralDashboard />}
 
       <div className="mt-8 pt-6 border-t border-gray-100">
         <Link href="/" className="text-sm text-brand hover:underline">← Browse all listings</Link>
