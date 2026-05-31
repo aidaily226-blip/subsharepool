@@ -4,6 +4,7 @@ import { useSession, signIn } from 'next-auth/react'
 import Image from 'next/image'
 import { createClient } from '@supabase/supabase-js'
 import { getInitials } from '@/lib/utils'
+import { ArrowLeft } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -146,7 +147,6 @@ export default function MessagesPage() {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedUser) return
     setSending(true)
-
     const res = await fetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -155,7 +155,6 @@ export default function MessagesPage() {
         body: newMessage.trim(),
       }),
     })
-
     if (res.ok) {
       setNewMessage('')
       fetchMessages()
@@ -167,7 +166,6 @@ export default function MessagesPage() {
   const handleSelectUser = (user: User) => {
     setSelectedUser(user)
     markAsRead(user.id)
-    // Optimistically clear unread badge
     setConversations(prev =>
       prev.map(c => c.user.id === user.id ? { ...c, unread: 0 } : c)
     )
@@ -208,7 +206,7 @@ export default function MessagesPage() {
                 <button
                   key={user.id}
                   onClick={() => handleSelectUser(user)}
-                  className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${selectedUser?.id === user.id ? 'bg-brand-light' : ''}`}
+                  className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${selectedUser?.id === user.id ? 'bg-brand/5' : ''}`}
                 >
                   {user.image ? (
                     <Image src={user.image} alt={user.name} width={40} height={40} className="rounded-full shrink-0" />
@@ -246,9 +244,9 @@ export default function MessagesPage() {
               <div className="p-3 border-b border-gray-100 flex items-center gap-3">
                 <button
                   onClick={() => setSelectedUser(null)}
-                  className="sm:hidden mr-1 text-gray-400 text-lg"
+                  className="sm:hidden mr-1 text-gray-400 hover:text-gray-600"
                 >
-                  ←
+                  <ArrowLeft size={20} />
                 </button>
                 {selectedUser.image ? (
                   <Image src={selectedUser.image} alt={selectedUser.name} width={36} height={36} className="rounded-full" />
