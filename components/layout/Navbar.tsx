@@ -1,5 +1,5 @@
 'use client'
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signIn, signOut } from 'next-auth/react'
@@ -19,9 +19,7 @@ function NavTabs() {
   const pathname = usePathname()
   const activeTab = searchParams.get('tab') || 'subs'
   const isHome = pathname === '/'
-
   if (!isHome) return null
-
   return (
     <div className="border-t border-gray-100 bg-cream">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -75,15 +73,61 @@ function MobileMenuTabsWrapper({ onClose }: { onClose: () => void }) {
   return <MobileMenuTabs activeTab={activeTab} isHome={isHome} onClose={onClose} />
 }
 
+function MessageIcon({ unread }: { unread: number }) {
+  return (
+    <Link href="/messages" className="relative p-2 text-gray-500 hover:text-brand transition-colors">
+      <MessageSquare size={18} />
+      {unread > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+          {unread > 9 ? '9+' : unread}
+        </span>
+      )}
+    </Link>
+  )
+}
+
+function MobileMessageLink({ unread, onClose }: { unread: number; onClose: () => void }) {
+  return (
+    <Link
+      href="/messages"
+      className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg flex items-center justify-between"
+      onClick={onClose}
+    >
+      <span>💬 Messages</span>
+      {unread > 0 && (
+        <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+          {unread > 9 ? '9+' : unread}
+        </span>
+      )}
+    </Link>
+  )
+}
+
 export default function Navbar() {
   const { data: session } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [unread, setUnread] = useState(0)
 
   const userName = session?.user?.name ?? ''
   const userEmail = session?.user?.email ?? ''
   const userImage = session?.user?.image ?? ''
   const userRole = (session?.user as { role?: string })?.role
+
+  useEffect(() => {
+    if (!session) return
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => clearInterval(interval)
+  }, [session])
+
+  const fetchUnread = async () => {
+    try {
+      const res = await fetch('/api/messages/unread-count')
+      const data = await res.json()
+      setUnread(data.count || 0)
+    } catch {}
+  }
 
   return (
     <nav className="bg-cream border-b border-gray-200 sticky top-0 z-50">
@@ -124,9 +168,9 @@ export default function Navbar() {
 
             {session ? (
               <>
-                <Link href="/messages" className="p-2 text-gray-500 hover:text-brand transition-colors">
-                  <MessageSquare size={18} />
-                </Link>
+                {/* Message icon with badge */}
+                <MessageIcon unread={unread} />
+
                 <div className="relative">
                   <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 hover:opacity-80 ml-1">
                     {userImage ? (
@@ -149,8 +193,13 @@ export default function Navbar() {
                       <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" onClick={() => setProfileOpen(false)}>
                         <User size={14} /> Profile
                       </Link>
-                      <Link href="/messages" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" onClick={() => setProfileOpen(false)}>
-                        <MessageSquare size={14} /> Messages
+                      <Link href="/messages" className="flex items-center justify-between px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" onClick={() => setProfileOpen(false)}>
+                        <span className="flex items-center gap-2"><MessageSquare size={14} /> Messages</span>
+                        {unread > 0 && (
+                          <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                            {unread > 9 ? '9+' : unread}
+                          </span>
+                        )}
                       </Link>
                       {userRole === 'admin' && (
                         <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" onClick={() => setProfileOpen(false)}>
@@ -173,8 +222,13 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <button className="sm:hidden p-1" onClick={() => setMenuOpen(!menuOpen)}>
+          <button className="sm:hidden p-1 relative" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            {!menuOpen && unread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {unread > 9 ? '9+' : unread}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -210,7 +264,6 @@ export default function Navbar() {
 
           <div className="border-t border-gray-100 my-2" />
 
-          {/* Other links */}
           <Link href="/blog" className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg" onClick={() => setMenuOpen(false)}>
             📝 Blog
           </Link>
@@ -220,9 +273,7 @@ export default function Navbar() {
               <Link href="/dashboard" className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg" onClick={() => setMenuOpen(false)}>
                 📦 My Dashboard
               </Link>
-              <Link href="/messages" className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg" onClick={() => setMenuOpen(false)}>
-                💬 Messages
-              </Link>
+              <MobileMessageLink unread={unread} onClose={() => setMenuOpen(false)} />
               <Link href="/profile" className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg" onClick={() => setMenuOpen(false)}>
                 👤 Profile
               </Link>
