@@ -97,7 +97,7 @@ export default function ReferralDashboard() {
         <h2 className="text-lg font-bold text-gray-900 mb-1">💰 Referral Program</h2>
         <p className="text-sm text-gray-500">
           Earn ₹1 when someone signs up with your link.<br />
-          Earn ₹1 more when they post their first listing.
+          Earn ₹1 when you post your first genuine listing.
         </p>
       </div>
 
