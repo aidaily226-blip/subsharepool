@@ -272,9 +272,8 @@ export default function ReferralDashboard() {
           {[
             { step: '1', text: 'Copy your referral link above', icon: '🔗' },
             { step: '2', text: 'Share it on WhatsApp, YouTube, blog, Instagram', icon: '📢' },
-            { step: '3', text: 'Someone signs up → you earn ₹1', icon: '👤' },
-            { step: '4', text: 'They post a listing → you earn ₹1 more', icon: '📦' },
-            { step: '5', text: 'Reach ₹20 → request UPI withdrawal', icon: '💸' },
+  { step: '3', text: 'Someone signs up via your link → you earn ₹1', icon: '👤' },
+{ step: '4', text: 'You post your first genuine listing → you earn ₹1', icon: '📦' },
           ].map(item => (
             <div key={item.step} className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shrink-0">

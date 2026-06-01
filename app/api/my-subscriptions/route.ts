@@ -8,7 +8,6 @@ async function getOrCreateUser(email: string, name?: string | null, image?: stri
     .select('id')
     .eq('email', email)
     .single()
-
   if (!user) {
     const { data: newUser } = await supabaseAdmin
       .from('users')
@@ -25,16 +24,13 @@ export async function GET() {
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   const user = await getOrCreateUser(session.user.email, session.user.name, session.user.image)
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
-
   const { data, error } = await supabaseAdmin
     .from('subscriptions')
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
-
   if (error) return NextResponse.json({ error }, { status: 500 })
   return NextResponse.json(data)
 }
@@ -44,10 +40,8 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   const body = await req.json()
-  const { name, description, price, total_slots, category } = body
-
+  const { name, description, price, total_slots, category, currency } = body
   if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
   const user = await getOrCreateUser(session.user.email, session.user.name, session.user.image)
@@ -55,10 +49,33 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('subscriptions')
-    .insert({ user_id: user.id, name, description, price, total_slots: total_slots || 2, category: category || 'other' })
+    .insert({
+      user_id: user.id,
+      name,
+      description,
+      price,
+      currency: currency || 'USD',
+      total_slots: total_slots || 2,
+      category: category || 'other',
+    })
     .select()
     .single()
 
   if (error) return NextResponse.json({ error }, { status: 500 })
+
+  // Track first listing earning for referral program
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://subsharepool.com'
+    await fetch(`${baseUrl}/api/referral/track-listing`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user.id,
+        listingId: data.id,
+        listingType: 'subscription',
+      }),
+    })
+  } catch {}
+
   return NextResponse.json(data)
 }

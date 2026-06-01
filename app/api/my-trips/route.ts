@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { title, type, from_location, to_location, date, total_seats, price, description, vehicle } = body
+  const { title, type, from_location, to_location, date, total_seats, price, currency, description, vehicle } = body
 
   if (!title || !from_location || !to_location || !date) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -59,15 +59,36 @@ export async function POST(req: NextRequest) {
     .from('trips')
     .insert({
       user_id: user.id,
-      title, type: type || 'carpool',
-      from_location, to_location, date,
+      title,
+      type: type || 'carpool',
+      from_location,
+      to_location,
+      date,
       total_seats: total_seats || 2,
       filled_seats: 0,
-      price, description, vehicle,
+      price,
+      currency: currency || 'USD',
+      description,
+      vehicle,
     })
     .select()
     .single()
 
   if (error) return NextResponse.json({ error }, { status: 500 })
+
+  // Track first listing earning for referral program
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://subsharepool.com'
+    await fetch(`${baseUrl}/api/referral/track-listing`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user.id,
+        listingId: data.id,
+        listingType: 'trip',
+      }),
+    })
+  } catch {}
+
   return NextResponse.json(data)
 }
