@@ -164,8 +164,13 @@ const handleSubmit = async () => {
   className="btn-primary text-xs py-1.5 px-3"
 >
   Visit
-</a>                  <button onClick={() => window.location.href = `/messages?userId=${link.users?.id}`} className="btn-outline text-xs py-1.5 px-3">💬</button>
-                </div>
+</a>                 
+<button
+  onClick={() => window.location.href = `/messages?userId=${link.users?.id}`}
+  className="btn-primary text-xs py-1.5 px-4"
+>
+  Chat
+</button>                </div>
               </div>
             </div>
           ))}

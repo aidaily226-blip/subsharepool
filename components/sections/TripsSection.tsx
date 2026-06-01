@@ -314,13 +314,12 @@ export default function TripsSection() {
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
                   <p className="text-xs text-gray-400">{trip.users?.name}</p>
                   <div className="flex gap-2">
-                    <button className="btn-primary text-xs py-1.5 px-3">Join</button>
-                    <button
-                      onClick={() => window.location.href = `/messages?userId=${trip.users?.id}`}
-                      className="btn-outline text-xs py-1.5 px-3"
-                    >
-                      💬
-                    </button>
+<button
+  onClick={() => window.location.href = `/messages?userId=${trip.users?.id}`}
+  className="btn-primary text-xs py-1.5 px-4"
+>
+  Chat
+</button>
                   </div>
                 </div>
               </div>
