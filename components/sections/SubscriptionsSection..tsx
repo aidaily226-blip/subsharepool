@@ -13,6 +13,7 @@ interface Subscription {
   filled_slots: number
   category: string
   created_at: string
+  interested_count: number
   users: { id: string; name: string; image: string }
 }
 
@@ -61,7 +62,6 @@ export default function SubscriptionsSection() {
   const handleSubmit = async () => {
     if (!session) { signIn('google'); return }
     if (!form.name) return
-
     setSubmitting(true)
     const res = await fetch('/api/subscriptions', {
       method: 'POST',
@@ -72,7 +72,6 @@ export default function SubscriptionsSection() {
         total_slots: parseInt(form.total_slots),
       }),
     })
-
     if (res.ok) {
       setForm({ name: '', description: '', price: '', currency: 'USD', total_slots: '2', category: 'streaming' })
       setShowForm(false)
@@ -82,8 +81,22 @@ export default function SubscriptionsSection() {
     setSubmitting(false)
   }
 
-  const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
+  const handleChat = async (sub: Subscription) => {
+    // Increment interested count
+    try {
+      await fetch(`/api/subscriptions/${sub.id}/interested`, { method: 'POST' })
+      // Update count locally immediately
+      setSubs(prev => prev.map(s =>
+        s.id === sub.id
+          ? { ...s, interested_count: (s.interested_count || 0) + 1 }
+          : s
+      ))
+    } catch {}
+    // Redirect to messages
+    window.location.href = `/messages?userId=${sub.users?.id}`
+  }
 
+  const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
   const getCurrencySymbol = (currency: string) => CURRENCY_SYMBOLS[currency] || currency + ' '
 
   return (
@@ -219,22 +232,32 @@ export default function SubscriptionsSection() {
                     <span className="text-xs text-gray-400">/mo</span>
                   </p>
                 </div>
+
                 {sub.description && (
                   <p className="text-sm text-gray-500 mb-3 line-clamp-2">{sub.description}</p>
                 )}
+
+                {/* Interested count — bold, visible to all */}
+                {(sub.interested_count || 0) > 0 && (
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <span className="text-sm">👥</span>
+                    <p className="text-sm font-bold text-gray-800">
+                      {sub.interested_count} {sub.interested_count === 1 ? 'person' : 'people'} interested
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
                   <div>
                     <p className="text-xs text-gray-400">{sub.users?.name}</p>
                     <p className="text-xs text-gray-400">{sub.filled_slots}/{sub.total_slots} slots filled</p>
                   </div>
-                  <div className="flex gap-2">
-        <button
-  onClick={() => window.location.href = `/messages?userId=${sub.users?.id}`}
-  className="btn-primary text-xs py-1.5 px-4"
->
-  Chat
-</button>
-                  </div>
+                  <button
+                    onClick={() => handleChat(sub)}
+                    className="btn-primary text-xs py-1.5 px-4"
+                  >
+                    Chat
+                  </button>
                 </div>
               </div>
             ))}
