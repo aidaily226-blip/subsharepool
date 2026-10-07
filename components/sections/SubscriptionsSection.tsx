@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import Pagination from '@/components/shared/Pagination'
+import GroupChat from '@/components/shared/GroupChat'
 
 interface Subscription {
   id: string
@@ -18,13 +19,8 @@ interface Subscription {
 }
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
-  INR: '₹',
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  AED: 'AED ',
-  SGD: 'SGD ',
-  AUD: 'A$',
+  INR: '₹', USD: '$', EUR: '€', GBP: '£',
+  AED: 'AED ', SGD: 'SGD ', AUD: 'A$',
 }
 
 const LIMIT = 12
@@ -36,19 +32,14 @@ export default function SubscriptionsSection() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({
-    name: '',
-    description: '',
-    price: '',
-    currency: 'USD',
-    total_slots: '2',
-    category: 'streaming',
-  })
   const [submitting, setSubmitting] = useState(false)
+  const [activeChat, setActiveChat] = useState<Subscription | null>(null)
+  const [form, setForm] = useState({
+    name: '', description: '', price: '',
+    currency: 'USD', total_slots: '2', category: 'streaming',
+  })
 
-  useEffect(() => {
-    fetchSubs(page)
-  }, [page])
+  useEffect(() => { fetchSubs(page) }, [page])
 
   const fetchSubs = async (p: number) => {
     setLoading(true)
@@ -82,18 +73,17 @@ export default function SubscriptionsSection() {
   }
 
   const handleChat = async (sub: Subscription) => {
+    if (!session) { signIn('google'); return }
     // Increment interested count
     try {
       await fetch(`/api/subscriptions/${sub.id}/interested`, { method: 'POST' })
-      // Update count locally immediately
       setSubs(prev => prev.map(s =>
         s.id === sub.id
           ? { ...s, interested_count: (s.interested_count || 0) + 1 }
           : s
       ))
     } catch {}
-    // Redirect to messages
-    window.location.href = `/messages?userId=${sub.users?.id}`
+    setActiveChat(sub)
   }
 
   const CATEGORIES = ['streaming', 'music', 'ai', 'productivity', 'gaming', 'other']
@@ -103,25 +93,14 @@ export default function SubscriptionsSection() {
     <div>
       {/* Hero */}
       <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Share subscriptions. Save money.
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Share subscriptions. Save money.</h2>
         <p className="text-gray-400 text-sm mb-4">
-          Split Netflix, Spotify, ChatGPT and more with trusted people worldwide. Post your plan, find members instantly.
+          Split Netflix, Spotify, ChatGPT and more with trusted people worldwide.
         </p>
         <div className="flex gap-6">
-          <div>
-            <p className="text-xl font-bold text-gray-900">5,000+</p>
-            <p className="text-xs text-gray-400">subscriptions shared</p>
-          </div>
-          <div>
-            <p className="text-xl font-bold text-gray-900">12k+</p>
-            <p className="text-xs text-gray-400">members saved</p>
-          </div>
-          <div>
-            <p className="text-xl font-bold text-gray-900">50-80%</p>
-            <p className="text-xs text-gray-400">avg cost saved</p>
-          </div>
+          <div><p className="text-xl font-bold text-gray-900">5,000+</p><p className="text-xs text-gray-400">subscriptions shared</p></div>
+          <div><p className="text-xl font-bold text-gray-900">12k+</p><p className="text-xs text-gray-400">members saved</p></div>
+          <div><p className="text-xl font-bold text-gray-900">50-80%</p><p className="text-xs text-gray-400">avg cost saved</p></div>
         </div>
       </div>
 
@@ -130,10 +109,7 @@ export default function SubscriptionsSection() {
           Subscription Shares
           {total > 0 && <span className="text-sm font-normal text-gray-400 ml-2">({total} total)</span>}
         </h2>
-        <button
-          onClick={() => session ? setShowForm(!showForm) : signIn('google')}
-          className="btn-primary"
-        >
+        <button onClick={() => session ? setShowForm(!showForm) : signIn('google')} className="btn-primary">
           + Post Share
         </button>
       </div>
@@ -142,27 +118,12 @@ export default function SubscriptionsSection() {
         <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6">
           <h3 className="font-medium text-gray-900 mb-4">New Subscription Share</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              className="input"
-              placeholder="Service name (e.g. Netflix)"
-              value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
-            />
-            <select
-              className="input"
-              value={form.category}
-              onChange={e => setForm({ ...form, category: e.target.value })}
-            >
-              {CATEGORIES.map(c => (
-                <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
-              ))}
+            <input className="input" placeholder="Service name (e.g. Netflix)" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <select className="input" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
             </select>
             <div className="flex gap-2">
-              <select
-                className="input w-28 shrink-0"
-                value={form.currency}
-                onChange={e => setForm({ ...form, currency: e.target.value })}
-              >
+              <select className="input w-28 shrink-0" value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}>
                 <option value="USD">$ USD</option>
                 <option value="INR">₹ INR</option>
                 <option value="EUR">€ EUR</option>
@@ -171,36 +132,14 @@ export default function SubscriptionsSection() {
                 <option value="SGD">SGD</option>
                 <option value="AUD">A$ AUD</option>
               </select>
-              <input
-                className="input flex-1"
-                placeholder="Price per person"
-                type="number"
-                value={form.price}
-                onChange={e => setForm({ ...form, price: e.target.value })}
-              />
+              <input className="input flex-1" placeholder="Price per person" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
             </div>
-            <input
-              className="input"
-              placeholder="Total slots"
-              type="number"
-              value={form.total_slots}
-              onChange={e => setForm({ ...form, total_slots: e.target.value })}
-            />
-            <textarea
-              className="input sm:col-span-2"
-              placeholder="Description"
-              rows={2}
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-            />
+            <input className="input" placeholder="Total slots" type="number" value={form.total_slots} onChange={e => setForm({ ...form, total_slots: e.target.value })} />
+            <textarea className="input sm:col-span-2" placeholder="Description" rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
           </div>
           <div className="flex gap-2 mt-3">
-            <button onClick={handleSubmit} disabled={submitting} className="btn-primary">
-              {submitting ? 'Posting...' : 'Post'}
-            </button>
-            <button onClick={() => setShowForm(false)} className="btn-outline">
-              Cancel
-            </button>
+            <button onClick={handleSubmit} disabled={submitting} className="btn-primary">{submitting ? 'Posting...' : 'Post'}</button>
+            <button onClick={() => setShowForm(false)} className="btn-outline">Cancel</button>
           </div>
         </div>
       )}
@@ -237,7 +176,7 @@ export default function SubscriptionsSection() {
                   <p className="text-sm text-gray-500 mb-3 line-clamp-2">{sub.description}</p>
                 )}
 
-                {/* Interested count — bold, visible to all */}
+                {/* Interested count */}
                 {(sub.interested_count || 0) > 0 && (
                   <div className="flex items-center gap-1.5 mb-3">
                     <span className="text-sm">👥</span>
@@ -254,9 +193,9 @@ export default function SubscriptionsSection() {
                   </div>
                   <button
                     onClick={() => handleChat(sub)}
-                    className="btn-primary text-xs py-1.5 px-4"
+                    className="btn-primary text-xs py-1.5 px-4 flex items-center gap-1.5"
                   >
-                    Chat
+                    💬 Chat
                   </button>
                 </div>
               </div>
@@ -267,12 +206,19 @@ export default function SubscriptionsSection() {
             page={page}
             total={total}
             limit={LIMIT}
-            onPage={(p) => {
-              setPage(p)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}
+            onPage={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
           />
         </>
+      )}
+
+      {/* Group Chat Modal */}
+      {activeChat && (
+        <GroupChat
+          listingId={activeChat.id}
+          listingType="subscription"
+          listingName={activeChat.name}
+          onClose={() => setActiveChat(null)}
+        />
       )}
     </div>
   )
