@@ -151,13 +151,17 @@ export default function MessagesPage() {
     setLoading(false)
   }
 
-  const fetchGroupChats = async () => {
-    setLoadingGroups(true)
+const fetchGroupChats = async () => {
+  setLoadingGroups(true)
+  try {
     const res = await fetch('/api/listing-chat/my-groups')
     const data = await res.json()
-    setGroupChats(data || [])
-    setLoadingGroups(false)
+    setGroupChats(Array.isArray(data) ? data : [])
+  } catch {
+    setGroupChats([])
   }
+  setLoadingGroups(false)
+}
 
   const fetchGroupMessages = async (chatId: string) => {
     const res = await fetch(`/api/listing-chat/messages?chatId=${chatId}`)
