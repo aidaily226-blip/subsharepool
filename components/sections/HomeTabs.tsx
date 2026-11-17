@@ -1,9 +1,11 @@
 'use client'
-import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import SubscriptionsSection from './SubscriptionsSection'
+import RequestsSection from './RequestsSection'
 import TripsSection from './TripsSection'
 import LinksSection from './LinksSection'
+import CreatorsSection from './CreatorsSection'
 import FeedSection from './FeedSection'
 
 function Tabs() {
@@ -13,8 +15,10 @@ function Tabs() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
       {active === 'subs' && <SubscriptionsSection />}
+      {active === 'requests' && <RequestsSection />}
       {active === 'trips' && <TripsSection />}
       {active === 'links' && <LinksSection />}
+      {active === 'creators' && <CreatorsSection />}
       {active === 'feed' && <FeedSection />}
     </div>
   )

@@ -11,6 +11,8 @@ const TABS = [
   { id: 'subs', label: '📦 Subscriptions', href: '/?tab=subs' },
   { id: 'trips', label: '✈️ Trips', href: '/?tab=trips' },
   { id: 'links', label: '🔗 Links', href: '/?tab=links' },
+  { id: 'requests', label: '🙋 Requests', href: '/?tab=requests' },
+  { id: 'creators', label: '🌟 Creators', href: '/?tab=creators' },
   { id: 'feed', label: '💬 Community', href: '/?tab=feed' },
 ]
 
